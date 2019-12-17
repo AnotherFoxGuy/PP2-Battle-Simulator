@@ -18,6 +18,7 @@ if (USE_PACKAGE_MANAGER)
 else ()
     find_package(SDL2 REQUIRED)
     find_package(FreeImage REQUIRED)
+    find_package(TBB REQUIRED)
 endif ()
 
 find_package(OpenGL REQUIRED)

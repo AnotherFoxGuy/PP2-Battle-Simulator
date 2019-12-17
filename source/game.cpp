@@ -109,6 +109,7 @@ void Game::Init() {
 // Close down application
 // -----------------------------------------------------------
 void Game::Shutdown() {
+    delete frame_count_font;
 }
 
 // -----------------------------------------------------------

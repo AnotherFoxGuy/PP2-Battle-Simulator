@@ -31,14 +31,11 @@ if (USE_PACKAGE_MANAGER)
     # Generate source groups for use in IDEs
     generate_source_groups(${SOURCE_FILES})
 
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL CONAN_PKG::sdl2 CONAN_PKG::freeimage CONAN_PKG::tbb)
     #target_link_libraries(${PROJECT_NAME} PRIVATE GLEW::GLEW)
-    target_link_libraries(${PROJECT_NAME} PRIVATE CONAN_PKG::sdl2)
-    target_link_libraries(${PROJECT_NAME} PRIVATE CONAN_PKG::freeimage)
 
 else ()
-    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL)
-    target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE OpenGL::GL TBB::tbb SDL2::SDL2)
 
     target_include_directories(${PROJECT_NAME} PRIVATE ${FreeImage_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} PRIVATE ${FREEIMAGE_LIBRARY})
