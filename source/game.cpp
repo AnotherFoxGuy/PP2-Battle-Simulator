@@ -132,7 +132,6 @@ Tank &Game::FindClosestEnemy(Tank &current_tank) {
             }
         }
     }
-
     return tanks.at(closest_index);
 }
 
@@ -145,6 +144,30 @@ Tank &Game::FindClosestEnemy(Tank &current_tank) {
 // -----------------------------------------------------------
 void Game::Update(float deltaTime) {
     //Update tanks
+    UpdateTanks();
+
+    //Update smoke plumes
+    UpdateSmoke();
+
+    //Update rockets
+    UpdateRockets();
+
+    //Remove exploded rockets with remove erase idiom
+    rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket &rocket) { return !rocket.active; }),
+                  rockets.end());
+
+    //Update particle beams
+    UpdateParticleBeams();
+
+    //Update explosion sprites
+    UpdateExplosions();
+
+    //Remove when done with remove erase idiom
+    explosions.erase(std::remove_if(explosions.begin(), explosions.end(),
+                                    [](const Explosion &explosion) { return explosion.done(); }), explosions.end());
+}
+
+void Game::UpdateTanks() {
     for (Tank &tank : tanks) {
         if (tank.active) {
             //Check tank collision and nudge tanks away from each other
@@ -152,12 +175,11 @@ void Game::Update(float deltaTime) {
                 if (&tank == &oTank) continue;
 
                 vec2 dir = tank.Get_Position() - oTank.Get_Position();
-                float dirSquaredLen = dir.sqrLength();
 
                 float colSquaredLen = (tank.Get_collision_radius() * tank.Get_collision_radius()) +
                                       (oTank.Get_collision_radius() * oTank.Get_collision_radius());
 
-                if (dirSquaredLen < colSquaredLen) {
+                if (dir.sqrLength() < colSquaredLen) {
                     tank.Push(dir.normalized(), 1.f);
                 }
             }
@@ -177,13 +199,15 @@ void Game::Update(float deltaTime) {
             }
         }
     }
+}
 
-    //Update smoke plumes
+void Game::UpdateSmoke() {
     for (Smoke &smoke : smokes) {
         smoke.Tick();
     }
+}
 
-    //Update rockets
+void Game::UpdateRockets() {
     for (Rocket &rocket : rockets) {
         rocket.Tick();
 
@@ -202,12 +226,9 @@ void Game::Update(float deltaTime) {
             }
         }
     }
+}
 
-    //Remove exploded rockets with remove erase idiom
-    rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket &rocket) { return !rocket.active; }),
-                  rockets.end());
-
-    //Update particle beams
+void Game::UpdateParticleBeams() {
     for (Particle_beam &particle_beam : particle_beams) {
         particle_beam.tick(tanks);
 
@@ -221,14 +242,12 @@ void Game::Update(float deltaTime) {
             }
         }
     }
+}
 
-    //Update explosion sprites and remove when done with remove erase idiom
+void Game::UpdateExplosions() {
     for (Explosion &explosion : explosions) {
         explosion.Tick();
     }
-
-    explosions.erase(std::remove_if(explosions.begin(), explosions.end(),
-                                    [](const Explosion &explosion) { return explosion.done(); }), explosions.end());
 }
 
 void Game::Draw() {

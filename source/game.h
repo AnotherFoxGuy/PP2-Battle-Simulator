@@ -67,6 +67,16 @@ namespace PP2 {
         long long frame_count = 0;
 
         bool lock_update = false;
+
+        void UpdateTanks();
+
+        void UpdateSmoke();
+
+        void UpdateRockets();
+
+        void UpdateParticleBeams();
+
+        void UpdateExplosions();
     };
 
 }; // namespace PP2
