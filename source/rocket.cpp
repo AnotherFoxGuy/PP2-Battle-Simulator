@@ -26,11 +26,7 @@ namespace PP2 {
         //Uses squared lengths to remove expensive square roots
         float distance_sqr = (position_other - position).sqrLength();
 
-        if (distance_sqr <= ((collision_radius * collision_radius) + (radius_other * radius_other))) {
-            return true;
-        } else {
-            return false;
-        }
+        return distance_sqr <= ((collision_radius * collision_radius) + (radius_other * radius_other));
     }
 
 } // namespace PP2

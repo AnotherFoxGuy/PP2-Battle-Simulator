@@ -37,6 +37,10 @@ using namespace PP2;
 
 
 //Global performance timer
+// base speeds
+// Roland:  69931
+// Sietze:  65732
+// Gert:    73804
 #define REF_PERFORMANCE 65732 //UPDATE THIS WITH YOUR REFERENCE PERFORMANCE (see console after 2k frames)
 static timer perf_timer;
 static float duration;
