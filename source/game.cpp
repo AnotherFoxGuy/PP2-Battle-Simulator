@@ -72,6 +72,9 @@ const static vec2 rocket_size(25, 24);
 const static float tank_radius = 12.f;
 const static float rocket_radius = 10.f;
 
+
+mutex mtx;
+
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
@@ -147,7 +150,8 @@ Tank &Game::FindClosestEnemy(Tank &current_tank) {
 // -----------------------------------------------------------
 void Game::Update(float deltaTime) {
     //Update tanks
-    for (Tank &tank : tanks) {
+    tbb::parallel_for(size_t(0), tanks.size(), [&](size_t i) {
+        Tank &tank = tanks[i];
         if (tank.active) {
             //Check tank collision and nudge tanks away from each other
             for (Tank &oTank : tanks) {
@@ -171,39 +175,47 @@ void Game::Update(float deltaTime) {
             if (tank.Rocket_Reloaded()) {
                 Tank &target = FindClosestEnemy(tank);
 
+                mtx.lock();
                 rockets.push_back(
                         Rocket(tank.position, (target.Get_Position() - tank.position).normalized() * 3, rocket_radius,
                                tank.allignment, ((tank.allignment == RED) ? &rocket_red : &rocket_blue)));
-
+                mtx.unlock();
                 tank.Reload_Rocket();
             }
         }
-    }
+    });
 
     //Update smoke plumes
-    for (Smoke &smoke : smokes) {
-        smoke.Tick();
-    }
+    //for (Smoke &smoke : smokes) {
+    tbb::parallel_for(size_t(0), smokes.size(), [&](size_t i) {
+        //smoke.Tick();
+        auto smoke = &smokes[i];
+        smoke->Tick();
+    });
 
     //Update rockets
-    for (Rocket &rocket : rockets) {
+    //for (Rocket &rocket : rockets) {
+    tbb::parallel_for(size_t(0), rockets.size(), [&](size_t i) {
+        Rocket &rocket = rockets[i];
+
         rocket.Tick();
 
         //Check if rocket collides with enemy tank, spawn explosion and if tank is destroyed spawn a smoke plume
         for (Tank &tank : tanks) {
             if (tank.active && (tank.allignment != rocket.allignment) &&
                 rocket.Intersects(tank.position, tank.collision_radius)) {
+                mtx.lock();
                 explosions.push_back(Explosion(&explosion, tank.position));
 
                 if (tank.hit(ROCKET_HIT_VALUE)) {
                     smokes.push_back(Smoke(smoke, tank.position - vec2(0, 48)));
                 }
-
+                mtx.unlock();
                 rocket.active = false;
                 break;
             }
         }
-    }
+    });
 
     //Remove exploded rockets with remove erase idiom
     rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket &rocket) { return !rocket.active; }),
@@ -214,20 +226,23 @@ void Game::Update(float deltaTime) {
         particle_beam.tick(tanks);
 
         //Damage all tanks within the damage window of the beam (the window is an axis-aligned bounding box)
-        for (Tank &tank : tanks) {
+        tbb::parallel_for(size_t(0), tanks.size(), [&](size_t i) {
+            Tank &tank = tanks[i];
             if (tank.active &&
                 particle_beam.rectangle.intersectsCircle(tank.Get_Position(), tank.Get_collision_radius())) {
                 if (tank.hit(particle_beam.damage)) {
                     smokes.push_back(Smoke(smoke, tank.position - vec2(0, 48)));
                 }
             }
-        }
+        });
     }
 
     //Update explosion sprites and remove when done with remove erase idiom
-    for (Explosion &explosion : explosions) {
-        explosion.Tick();
-    }
+    //for (Explosion &explosion : explosions) {
+    tbb::parallel_for(size_t(0), explosions.size(), [&](size_t i) {
+        auto explosion = &explosions[i];
+        explosion->Tick();
+    });
 
     explosions.erase(std::remove_if(explosions.begin(), explosions.end(),
                                     [](const Explosion &explosion) { return explosion.done(); }), explosions.end());
