@@ -11,7 +11,7 @@ namespace PP2 {
 
         Particle_beam(vec2 min, vec2 max, Sprite *particle_beam_sprite, int damage);
 
-        void tick(std::vector <Tank> &tanks);
+        void tick(std::vector<Tank> &tanks);
 
         void Draw(Surface *screen);
 
