@@ -11,12 +11,12 @@
 #pragma warning(disable : 4311) // pointer truncation from HANDLE to long
 #endif
 
-#include <iostream>
-#include <SDL2/SDL.h>
 #include "template.h"
-#include "surface.h"
+#include "defines.h"
 #include "game.h"
-#include "prerequisites.h"
+#include "surface.h"
+#include <SDL2/SDL.h>
+#include <iostream>
 #include <stdint.h>
 
 namespace PP2 {

@@ -1,18 +1,27 @@
 #include "Grid.h"
+#include "defines.h"
 
 using namespace std;
+using namespace PP2;
 
-PP2::Grid::Grid()
+Grid* Grid::instance = nullptr;
+
+Grid::Grid()
 {
     for (auto& x : grid)
         for (auto& y : x)
             y.reserve(500);
 }
-PP2::Grid::~Grid()
+Grid::~Grid() = default;
+
+Grid* Grid::Instance()
 {
+    if (instance == nullptr)
+        instance = new Grid();
+    return instance;
 }
 
-PP2::vec2<int> PP2::Grid::GetGridCell(vec2<> tankPos)
+vec2<int> Grid::GetGridCell(vec2<> tankPos)
 {
     int x = std::clamp(tankPos.x / GRID_SIZE_X, 0.0f, (float)GRID_SIZE_X);
     int y = std::clamp(tankPos.y / GRID_SIZE_Y, 0.0f, (float)GRID_SIZE_Y);
@@ -20,13 +29,40 @@ PP2::vec2<int> PP2::Grid::GetGridCell(vec2<> tankPos)
     return vec2<int>(x, y);
 }
 
-void PP2::Grid::AddTankToGridCell(Tank* tank)
+vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
 {
-    grid[tank->gridCell.x][tank->gridCell.y].push_back(tank);
-    /*auto g = grid[tank->gridCell.x][tank->gridCell.y];
-    g.emplace_back(tank);*/
+    std::vector<Tank*> ts;
+    const vec2<int> checkCoords[9] = {
+        {-1, -1},
+        {0, 1},
+        {1, 1},
+        {-1, 0},
+        {0, 0},
+        {1, 0},
+        {-1, -1},
+        {0, -1},
+        {1, -1},
+    };
+
+    for (auto c : checkCoords)
+    {
+        int x = tankPos.x + c.x;
+        int y = tankPos.y + c.y;
+        if (x >= 0 && y >= 0 && x <= GRID_SIZE_X && y <= GRID_SIZE_Y)
+            ts.insert(end(ts), begin(grid[x][y]), end(grid[x][y]));
+    }
+
+    return ts;
 }
 
-void PP2::Grid::MoveTankToGridCell(PP2::Tank* tank)
+void Grid::AddTankToGridCell(Tank* tank)
 {
+    grid[tank->gridCell.x][tank->gridCell.y].emplace_back(tank);
+}
+
+void Grid::MoveTankToGridCell(PP2::Tank* tank, vec2<int> newpos)
+{
+    auto c = grid[tank->gridCell.x][tank->gridCell.y];
+    c.erase(std::remove(begin(c), end(c), tank), end(c));
+    grid[newpos.x][newpos.y].push_back(tank);
 }

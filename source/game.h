@@ -1,12 +1,12 @@
 #pragma once
 
-#include "prerequisites.h"
-#include "tank.h"
 #include "Grid.h"
-#include "rocket.h"
-#include "smoke.h"
+#include "defines.h"
 #include "explosion.h"
 #include "particle_beam.h"
+#include "rocket.h"
+#include "smoke.h"
+#include "tank.h"
 #include <cstdint>
 
 namespace PP2 {
@@ -57,8 +57,6 @@ namespace PP2 {
 
     private:
         Surface *screen;
-
-        Grid* grid;
         std::vector<Tank> tanks;
         std::vector<Rocket> rockets;
         std::vector<Smoke> smokes;
@@ -79,6 +77,8 @@ namespace PP2 {
         void UpdateParticleBeams();
 
         void UpdateExplosions();
+
+        ~Game();
     };
 
 }; // namespace PP2
