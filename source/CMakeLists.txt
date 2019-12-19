@@ -18,6 +18,13 @@ set(SOURCE_FILES
         defines.h
         Grid.{h,cpp})
 
+if (ENABLE_MICROPROFILE)
+    list(APPEND SOURCE_FILES
+            microprofile.config.h
+            ${microprofile_SOURCE_DIR}/microprofile_html.h
+            ${microprofile_SOURCE_DIR}/microprofile.{h,cpp}
+            )
+endif (ENABLE_MICROPROFILE)
 
 include(SourceFileUtils)
 
@@ -45,6 +52,28 @@ if (USE_PACKAGE_MANAGER)
     include(cotire)
     cotire(${PROJECT_NAME})
 endif ()
+
+
+if (MSVC)
+    # set startup project for Visual Studio Builds
+    set_property(
+            DIRECTORY ${PROJECT_SOURCE_DIR}
+            PROPERTY
+            VS_STARTUP_PROJECT ${PROJECT_NAME}
+    )
+    # set Visual Studio working directory to the Configuration directory
+    set_target_properties(
+            ${PROJECT_NAME}
+            PROPERTIES
+            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$(Configuration)"
+    )
+endif ()
+
+if (ENABLE_MICROPROFILE)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${microprofile_SOURCE_DIR})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC USE_MICROPROFILE MICROPROFILE_USE_CONFIG)
+endif ()
+
 add_custom_target(
         copy_resources
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets/

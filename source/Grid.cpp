@@ -32,6 +32,7 @@ vec2<int> Grid::GetGridCell(vec2<> tankPos)
 vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
 {
     std::vector<Tank*> ts;
+    ts.clear();
     const vec2<int> checkCoords[9] = {
         {-1, -1},
         {0, 1},

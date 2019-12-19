@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project("PP2 Battle Simulator")
 
 option(USE_PACKAGE_MANAGER "Use conan for managing packages" ON)
+option(ENABLE_MICROPROFILE "Enable microprofile" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(FeatureSummary)
@@ -61,6 +62,14 @@ ELSEIF (UNIX)
     set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} -Og -ggdb")
     set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} -Og -ggdb")
 endif (WIN32)
+
+
+if (ENABLE_MICROPROFILE)
+    include(FetchContent)
+    FetchContent_Declare(microprofile
+            GIT_REPOSITORY https://github.com/jonasmr/microprofile.git)
+    FetchContent_MakeAvailable(microprofile)
+endif (ENABLE_MICROPROFILE)
 
 add_subdirectory(source)
 
