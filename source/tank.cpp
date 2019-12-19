@@ -45,13 +45,11 @@ namespace PP2 {
             reloaded = true;
         }
 
-        //TODO
         if (Grid::GetGridCell(position) != gridCell) {
             Grid::Instance()->MoveTankToGridCell(this, Grid::GetGridCell(position));
+            //Update grid cell
+            gridCell = Grid::GetGridCell(position);
         }
-
-        //Update grid cell
-        gridCell = Grid::GetGridCell(position);
 
         force = vec2(0.f, 0.f);
 

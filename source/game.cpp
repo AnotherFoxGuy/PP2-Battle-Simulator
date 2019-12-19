@@ -173,7 +173,7 @@ void Game::UpdateTanks()
         //Check tank collision and nudge tanks away from each other
         //for (Tank &oTank : tanks) {
         auto ts = Grid::Instance()->GetTanksAtPos(tank.gridCell);
-        for (Tank* oTank : ts)
+        for (auto oTank : ts)
         {
             if (&tank == oTank) continue;
 
