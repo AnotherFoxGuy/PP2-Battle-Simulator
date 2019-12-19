@@ -14,7 +14,8 @@ class Grid
     void AddTankToGridCell(Tank* tank);
     static vec2<int> GetGridCell(vec2<> tankPos);
     void MoveTankToGridCell(Tank* tank, vec2<int> newpos);
-    std::vector<Tank*> GetTanksAtPos(vec2<int> c);
+
+    std::vector<Tank*> grid[GRID_SIZE_X + 1][GRID_SIZE_Y + 1];
 
   private:
     /* Here will be the instance stored. */
@@ -23,6 +24,7 @@ class Grid
     /* Private constructor to prevent instancing. */
     Grid();
 
-    std::vector<Tank*> grid[GRID_SIZE_X + 1][GRID_SIZE_Y + 1];
+
+
 };
 } // namespace PP2

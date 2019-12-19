@@ -19,6 +19,10 @@ using namespace PP2;
 
 #include "game.h"
 
+#ifdef USE_MICROPROFILE
+#include "microprofile.h"
+#endif
+
 static timer perf_timer;
 static float duration;
 
@@ -138,6 +142,9 @@ Tank& Game::FindClosestEnemy(Tank& current_tank)
 // -----------------------------------------------------------
 void Game::Update(float deltaTime)
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Game", "Update", MP_YELLOW);
+#endif
     //Update tanks
     UpdateTanks();
 
@@ -165,6 +172,9 @@ void Game::Update(float deltaTime)
 
 void Game::UpdateTanks()
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Game", "UpdateTanks", MP_YELLOW);
+#endif
     for (Tank& tank : tanks)
     {
         if (!tank.active)
@@ -172,19 +182,29 @@ void Game::UpdateTanks()
 
         //Check tank collision and nudge tanks away from each other
         //for (Tank &oTank : tanks) {
-        auto ts = Grid::Instance()->GetTanksAtPos(tank.gridCell);
-        for (auto oTank : ts)
+        //auto ts = Grid::Instance()->GetTanksAtPos(tank.gridCell);
+
+        for (auto c : checkCoords)
         {
-            if (&tank == oTank) continue;
+            int x = tank.gridCell.x + c.x;
+            int y = tank.gridCell.y + c.y;
+            if (x < 0 || y < 0 || x > GRID_SIZE_X || y > GRID_SIZE_Y)
+                continue;
 
-            vec2<> dir = tank.Get_Position() - oTank->Get_Position();
-
-            float colSquaredLen = (tank.Get_collision_radius() * tank.Get_collision_radius()) +
-                                  (oTank->Get_collision_radius() * oTank->Get_collision_radius());
-
-            if (dir.sqrLength() < colSquaredLen)
+            auto ts = Grid::Instance()->grid[x][y];
+            for (auto oTank : ts)
             {
-                tank.Push(dir.normalized(), 1.f);
+                if (&tank == oTank) continue;
+
+                vec2<> dir = tank.Get_Position() - oTank->Get_Position();
+
+                float colSquaredLen = (tank.Get_collision_radius() * tank.Get_collision_radius()) +
+                                      (oTank->Get_collision_radius() * oTank->Get_collision_radius());
+
+                if (dir.sqrLength() < colSquaredLen)
+                {
+                    tank.Push(dir.normalized(), 1.f);
+                }
             }
         }
 
@@ -206,6 +226,9 @@ void Game::UpdateTanks()
 
 void Game::UpdateSmoke()
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Game", "UpdateSmoke", MP_YELLOW);
+#endif
     for (Smoke& smoke : smokes)
     {
         smoke.Tick();
@@ -214,6 +237,9 @@ void Game::UpdateSmoke()
 
 void Game::UpdateRockets()
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Game", "UpdateRockets", MP_YELLOW);
+#endif
     for (Rocket& rocket : rockets)
     {
         rocket.Tick();
@@ -240,6 +266,9 @@ void Game::UpdateRockets()
 
 void Game::UpdateParticleBeams()
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Game", "UpdateParticleBeams", MP_YELLOW);
+#endif
     for (Particle_beam& particle_beam : particle_beams)
     {
         particle_beam.tick(tanks);
@@ -261,6 +290,9 @@ void Game::UpdateParticleBeams()
 
 void Game::UpdateExplosions()
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Game", "UpdateExplosions", MP_YELLOW);
+#endif
     for (Explosion& explosion : explosions)
     {
         explosion.Tick();
