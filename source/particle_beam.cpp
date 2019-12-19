@@ -6,7 +6,7 @@ namespace PP2 {
             : min_position(), max_position(), particle_beam_sprite(nullptr), sprite_frame(0), rectangle(), damage(1) {
     }
 
-    Particle_beam::Particle_beam(vec2 min, vec2 max, Sprite *particle_beam_sprite, int damage) : particle_beam_sprite(
+    Particle_beam::Particle_beam(vec2<> min, vec2<> max, Sprite *particle_beam_sprite, int damage) : particle_beam_sprite(
             particle_beam_sprite), sprite_frame(0), damage(damage) {
         min_position = min;
         max_position = min + max;
@@ -22,7 +22,7 @@ namespace PP2 {
     }
 
     void Particle_beam::Draw(Surface *screen) {
-        vec2 position = rectangle.min;
+        vec2<> position = rectangle.min;
 
         const int offsetX = 23;
         const int offsetY = 137;

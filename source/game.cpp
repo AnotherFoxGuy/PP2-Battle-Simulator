@@ -11,6 +11,7 @@ using namespace PP2;
 #include "prerequisites.h"
 #include "ThreadPool.h"
 
+#include "Grid.h"
 #include "tank.h"
 #include "rocket.h"
 #include "smoke.h"
@@ -64,8 +65,8 @@ static Sprite smoke(smoke_img, 4);
 static Sprite explosion(explosion_img, 9);
 static Sprite particle_beam_sprite(particle_beam_img, 3);
 
-const static vec2 tank_size(14, 18);
-const static vec2 rocket_size(25, 24);
+const static vec2<> tank_size(14, 18);
+const static vec2<> rocket_size(25, 24);
 
 const static float tank_radius = 12.f;
 const static float rocket_radius = 10.f;
@@ -75,6 +76,8 @@ const static float rocket_radius = 10.f;
 // -----------------------------------------------------------
 void Game::Init() {
     frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
+
+    grid = new Grid();
 
     tanks.reserve(NUM_TANKS_BLUE + NUM_TANKS_RED);
 
@@ -101,18 +104,24 @@ void Game::Init() {
                      &smoke, 80, 80, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
     }
 
-    particle_beams.push_back(Particle_beam(vec2(SCRWIDTH / 2, SCRHEIGHT / 2), vec2(100, 50), &particle_beam_sprite,
+    particle_beams.push_back(Particle_beam(vec2<>(SCRWIDTH / 2, SCRHEIGHT / 2), vec2<>(100, 50), &particle_beam_sprite,
                                            PARTICLE_BEAM_HIT_VALUE));
     particle_beams.push_back(
-            Particle_beam(vec2(80, 80), vec2(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
+            Particle_beam(vec2<>(80, 80), vec2<>(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
     particle_beams.push_back(
-            Particle_beam(vec2(1200, 600), vec2(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
+            Particle_beam(vec2<>(1200, 600), vec2<>(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
+
+
+    for (auto &tank : tanks){
+        grid->AddTankToGridCell(&tank);
+    }
 }
 
 // -----------------------------------------------------------
 // Close down application
 // -----------------------------------------------------------
 void Game::Shutdown() {
+    delete grid;
     delete frame_count_font;
 }
 
@@ -174,7 +183,7 @@ void Game::UpdateTanks() {
             for (Tank &oTank : tanks) {
                 if (&tank == &oTank) continue;
 
-                vec2 dir = tank.Get_Position() - oTank.Get_Position();
+                vec2<> dir = tank.Get_Position() - oTank.Get_Position();
 
                 float colSquaredLen = (tank.Get_collision_radius() * tank.Get_collision_radius()) +
                                       (oTank.Get_collision_radius() * oTank.Get_collision_radius());
@@ -201,6 +210,7 @@ void Game::UpdateTanks() {
     }
 }
 
+
 void Game::UpdateSmoke() {
     for (Smoke &smoke : smokes) {
         smoke.Tick();
@@ -218,7 +228,7 @@ void Game::UpdateRockets() {
                 explosions.push_back(Explosion(&explosion, tank.position));
 
                 if (tank.hit(ROCKET_HIT_VALUE)) {
-                    smokes.push_back(Smoke(smoke, tank.position - vec2(0, 48)));
+                    smokes.push_back(Smoke(smoke, tank.position - vec2<>(0, 48)));
                 }
 
                 rocket.active = false;
@@ -237,7 +247,7 @@ void Game::UpdateParticleBeams() {
             if (tank.active &&
                 particle_beam.rectangle.intersectsCircle(tank.Get_Position(), tank.Get_collision_radius())) {
                 if (tank.hit(particle_beam.damage)) {
-                    smokes.push_back(Smoke(smoke, tank.position - vec2(0, 48)));
+                    smokes.push_back(Smoke(smoke, tank.position - vec2<>(0, 48)));
                 }
             }
         }
@@ -261,7 +271,7 @@ void Game::Draw() {
     for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++) {
         tanks.at(i).Draw(screen);
 
-        vec2 tPos = tanks.at(i).Get_Position();
+        vec2<> tPos = tanks.at(i).Get_Position();
         // tread marks
         if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
             background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(

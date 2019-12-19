@@ -31,7 +31,7 @@ typedef unsigned int uint;
 #define __inline __attribute__((__always_inline__))
 #endif
 
-#define clamp(v, a, b) ((std::min)((b), (std::max)((v), (a))))
+//#define clamp(v, a, b) ((std::min)((b), (std::max)((v), (a))))
 
 #define PI 3.14159265358979323846264338327950288419716939937510582097494459072381640628620899862803482534211706798f
 
@@ -90,21 +90,22 @@ namespace PP2 {
     };
 
 // vectors
+    template <class T=float>
     class vec2 // adapted from https://github.com/dcow/RayTracer
     {
     public:
         union {
             struct {
-                float x, y;
+                T x, y;
             };
-            float cell[2];
+            T cell[2];
         };
 
         vec2() = default;
 
-        vec2(float v) : x(v), y(v) {}
+        vec2(T v) : x(v), y(v) {}
 
-        vec2(float x, float y) : x(x), y(y) {}
+        vec2(T x, T y) : x(x), y(y) {}
 
         vec2 operator-() const { return vec2(-x, -y); }
 
@@ -114,9 +115,12 @@ namespace PP2 {
 
         vec2 operator*(const vec2 &operand) const { return vec2(x * operand.x, y * operand.y); }
 
-        vec2 operator*(float operand) const { return vec2(x * operand, y * operand); }
+        bool operator==(const vec2 &operand) const { return x == operand.x && y == operand.y; }
+        bool operator!=(const vec2 &operand) const { return x != operand.x || y != operand.y; }
 
-        vec2 operator/(float operand) const { return vec2(x / operand, y / operand); }
+        vec2 operator*(T operand) const { return vec2(x * operand, y * operand); }
+
+        vec2 operator/(T operand) const { return vec2(x / operand, y / operand); }
 
         void operator-=(const vec2 &a) {
             x -= a.x;
@@ -133,36 +137,36 @@ namespace PP2 {
             y *= a.y;
         }
 
-        void operator*=(float a) {
+        void operator*=(T a) {
             x *= a;
             y *= a;
         }
 
-        void operator/=(float a) {
+        void operator/=(T a) {
             x /= a;
             y /= a;
         }
 
-        float &operator[](const int idx) { return cell[idx]; }
+        T &operator[](const int idx) { return cell[idx]; }
 
-        float length() { return sqrtf(x * x + y * y); }
+        T length() { return sqrtf(x * x + y * y); }
 
-        float sqrLength() { return x * x + y * y; }
+        T sqrLength() { return x * x + y * y; }
 
         vec2 normalized() {
-            float r = 1.0f / length();
+            T r = 1.0f / length();
             return vec2(x * r, y * r);
         }
 
         void normalize() {
-            float r = 1.0f / length();
+            T r = 1.0f / length();
             x *= r;
             y *= r;
         }
 
         static vec2 normalize(vec2 v) { return v.normalized(); }
 
-        float dot(const vec2 &operand) const { return x * operand.x + y * operand.y; }
+        T dot(const vec2 &operand) const { return x * operand.x + y * operand.y; }
     };
 
     class Rectangle2D {
@@ -170,11 +174,11 @@ namespace PP2 {
     public:
         Rectangle2D() = default;
 
-        Rectangle2D(vec2 min, vec2 max) : min(min), max(max) {};
+        Rectangle2D(vec2<> min, vec2<float> max) : min(min), max(max) {};
 
-        bool intersectsCircle(const vec2 &pos, const float radius) const {
-            float deltaX = pos.x - clamp(pos.x, min.x, max.x);
-            float deltaY = pos.y - clamp(pos.y, min.y, max.y);
+        bool intersectsCircle(const vec2<float> &pos, const float radius) const {
+            float deltaX = pos.x - std::clamp(pos.x, min.x, max.x);
+            float deltaY = pos.y - std::clamp(pos.y, min.y, max.y);
 
             return ((deltaX * deltaX) + (deltaY * deltaY)) <= (radius * radius);
         }
@@ -186,8 +190,8 @@ namespace PP2 {
             return true;
         }
 
-        vec2 min;
-        vec2 max;
+        vec2<> min;
+        vec2<> max;
     };
 
     class vec3 {

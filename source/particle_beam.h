@@ -9,14 +9,14 @@ namespace PP2 {
     public:
         Particle_beam();
 
-        Particle_beam(vec2 min, vec2 max, Sprite *particle_beam_sprite, int damage);
+        Particle_beam(vec2<> min, vec2<> max, Sprite *particle_beam_sprite, int damage);
 
         void tick(std::vector <Tank> &tanks);
 
         void Draw(Surface *screen);
 
-        vec2 min_position;
-        vec2 max_position;
+        vec2<> min_position;
+        vec2<> max_position;
 
         Rectangle2D rectangle;
 

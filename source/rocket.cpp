@@ -1,7 +1,7 @@
 #include "rocket.h"
 
 namespace PP2 {
-    Rocket::Rocket(vec2 position, vec2 direction, float collision_radius, allignments allignment, Sprite *rocket_sprite)
+    Rocket::Rocket(vec2<> position, vec2<> direction, float collision_radius, allignments allignment, Sprite *rocket_sprite)
             : position(position), speed(direction), collision_radius(collision_radius), allignment(allignment),
               current_frame(0), rocket_sprite(rocket_sprite), active(true) {
     }
@@ -22,7 +22,7 @@ namespace PP2 {
     }
 
 //Does the given circle collide with this rockets collision circle?
-    bool Rocket::Intersects(vec2 position_other, float radius_other) const {
+    bool Rocket::Intersects(vec2<> position_other, float radius_other) const {
         //Uses squared lengths to remove expensive square roots
         float distance_sqr = (position_other - position).sqrLength();
 
