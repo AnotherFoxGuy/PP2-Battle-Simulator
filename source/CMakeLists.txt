@@ -48,13 +48,14 @@ else ()
     target_link_libraries(${PROJECT_NAME} PRIVATE ${FREEIMAGE_LIBRARY})
 endif ()
 
-if (USE_PACKAGE_MANAGER)
+if (USE_PACKAGE_MANAGER AND NOT ENABLE_MICROPROFILE)
     include(cotire)
     cotire(${PROJECT_NAME})
 endif ()
 
 
 if (MSVC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE "ws2_32.lib")
     # set startup project for Visual Studio Builds
     set_property(
             DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -65,7 +66,7 @@ if (MSVC)
     set_target_properties(
             ${PROJECT_NAME}
             PROPERTIES
-            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$(Configuration)"
+            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/source/$(Configuration)"
     )
 endif ()
 
