@@ -1,4 +1,5 @@
 #include "tank.h"
+#include "Grid.h"
 
 namespace PP2 {
     Tank::Tank(
@@ -13,6 +14,7 @@ namespace PP2 {
             int health,
             float max_speed)
             : position(pos_x, pos_y),
+              gridCell(Grid::GetGridCell(position)),
               allignment(allignment),
               target(tar_x, tar_y),
               health(health),
@@ -32,7 +34,7 @@ namespace PP2 {
     }
 
     void Tank::Tick() {
-        vec2 direction = (target - position).normalized();
+        vec2<> direction = (target - position).normalized();
 
         //Update using accumulated force
         speed = direction + force;
@@ -42,6 +44,13 @@ namespace PP2 {
         if (--reload_time <= 0.0f) {
             reloaded = true;
         }
+
+        if (Grid::GetGridCell(position) != gridCell) {
+
+        }
+
+        //Update grid cell
+        gridCell = Grid::GetGridCell(position);
 
         force = vec2(0.f, 0.f);
 
@@ -71,7 +80,7 @@ namespace PP2 {
 
 //Draw the sprite with the facing based on this tanks movement direction
     void Tank::Draw(Surface *screen) {
-        vec2 direction = (target - position).normalized();
+        vec2<> direction = (target - position).normalized();
         tank_sprite->SetFrame(
                 ((abs(direction.x) > abs(direction.y)) ? ((direction.x < 0) ? 3 : 0) : ((direction.y < 0) ? 9 : 6)) +
                 (current_frame / 3));
@@ -83,7 +92,7 @@ namespace PP2 {
     }
 
 //Add some force in a given direction
-    void Tank::Push(vec2 direction, float magnitude) {
+    void Tank::Push(vec2<> direction, float magnitude) {
         force += direction * magnitude;
     }
 

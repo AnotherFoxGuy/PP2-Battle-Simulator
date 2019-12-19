@@ -2,6 +2,7 @@
 
 #include "prerequisites.h"
 #include "tank.h"
+#include "Grid.h"
 #include "rocket.h"
 #include "smoke.h"
 #include "explosion.h"
@@ -57,6 +58,7 @@ namespace PP2 {
     private:
         Surface *screen;
 
+        Grid* grid;
         std::vector<Tank> tanks;
         std::vector<Rocket> rockets;
         std::vector<Smoke> smokes;

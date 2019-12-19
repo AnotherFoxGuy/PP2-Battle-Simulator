@@ -16,7 +16,7 @@ set(SOURCE_FILES
         tank.{h,cpp}
         template.{h,cpp}
         prerequisites.h
-        )
+        Grid.{h,cpp})
 
 
 include(SourceFileUtils)

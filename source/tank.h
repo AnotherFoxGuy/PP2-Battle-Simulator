@@ -18,7 +18,7 @@ namespace PP2 {
 
         void Tick();
 
-        vec2 Get_Position() const { return position; };
+        vec2<> Get_Position() const { return position; };
 
         float Get_collision_radius() const { return collision_radius; };
 
@@ -34,16 +34,17 @@ namespace PP2 {
 
         int CompareHealth(const Tank &other) const;
 
-        void Push(vec2 direction, float magnitude);
+        void Push(vec2<float> direction, float magnitude);
 
-        vec2 position;
-        vec2 speed;
-        vec2 target;
+        vec2<float> position;
+        vec2<int> gridCell;
+        vec2<float> speed;
+        vec2<float> target;
 
         int health;
 
         float collision_radius;
-        vec2 force;
+        vec2<float> force;
 
         float max_speed;
         float reload_time;
