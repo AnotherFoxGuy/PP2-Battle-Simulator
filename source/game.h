@@ -79,17 +79,6 @@ namespace PP2 {
         void UpdateExplosions();
 
         ~Game();
-
-        const vec2<int> checkCoords[9] = {
-            {0, 0},
-            {0, 1},
-            {1, 1},
-            {1, 0},
-            {1, -1},
-            {0, -1},
-            {-1, -1},
-            {-1, 0},
-            {-1, 1}};
     };
 
 }; // namespace PP2

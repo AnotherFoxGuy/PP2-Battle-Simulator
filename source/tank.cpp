@@ -50,10 +50,10 @@ void Tank::Tick()
         reloaded = true;
     }
 
-    auto c = Grid::GetGridCell(position);
-    if (c != gridCell)
+    auto newGridCell = Grid::GetGridCell(position);
+    if (gridCell != newGridCell)
     {
-        Grid::Instance()->MoveTankToGridCell(this, c);
+        Grid::Instance()->MoveTankToGridCell(this, newGridCell);
         //Update grid cell
         gridCell = Grid::GetGridCell(position);
     }
