@@ -18,6 +18,13 @@ namespace PP2 {
 
         bool Intersects(vec2<> position_other, float radius_other) const;
 
+        bool operator==(const Rocket& rhs) const
+        {
+            return rhs.id == id;
+        }
+
+        int id;
+
         vec2<> position;
         vec2<> speed;
 

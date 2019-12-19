@@ -1,10 +1,15 @@
 #include "Grid.h"
 #include "defines.h"
 
+#ifdef USE_MICROPROFILE
+#include "microprofile.h"
+#endif
+
 using namespace std;
 using namespace PP2;
 
 Grid* Grid::instance = nullptr;
+mutex gmtx;
 
 Grid::Grid()
 {
@@ -31,6 +36,9 @@ vec2<int> Grid::GetGridCell(vec2<> tankPos)
 
 vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
 {
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Grid", "GetTanksAtPos", MP_RED);
+#endif
     std::vector<Tank*> ts;
     ts.clear();
     const vec2<int> checkCoords[9] = {
@@ -63,7 +71,14 @@ void Grid::AddTankToGridCell(Tank* tank)
 
 void Grid::MoveTankToGridCell(PP2::Tank* tank, vec2<int> newpos)
 {
-    auto c = grid[tank->gridCell.x][tank->gridCell.y];
+    scoped_lock lock(gmtx);
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_SCOPEI("Grid", "MoveTankToGridCell", MP_RED);
+#endif
+    auto& c = grid[tank->gridCell.x][tank->gridCell.y];
     c.erase(std::remove(begin(c), end(c), tank), end(c));
     grid[newpos.x][newpos.y].push_back(tank);
+#ifdef USE_MICROPROFILE
+    MICROPROFILE_COUNTER_SET("Grid/gird/", c.size());
+#endif
 }

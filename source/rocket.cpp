@@ -3,7 +3,7 @@
 namespace PP2 {
     Rocket::Rocket(vec2<> position, vec2<> direction, float collision_radius, allignments allignment, Sprite *rocket_sprite)
             : position(position), speed(direction), collision_radius(collision_radius), allignment(allignment),
-              current_frame(0), rocket_sprite(rocket_sprite), active(true) {
+              current_frame(0), rocket_sprite(rocket_sprite), active(true), id(rand()) {
     }
 
     Rocket::~Rocket() {
