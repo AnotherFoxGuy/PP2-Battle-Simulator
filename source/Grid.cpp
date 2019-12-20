@@ -51,19 +51,6 @@ vector<vec2<int>> Grid::GetNeighbouringCells() {
     return cells;
 }
 
-std::vector<vec2<int>> Grid::GetNeighbouringCells(vec2<> min, vec2<> max) {
-    vec2<int> minCell = GetGridCell(min);
-    vec2<int> maxCell = GetGridCell(max);
-    vector<vec2<int>> cells = {};
-    for (int j = minCell.y; j < maxCell.y; ++j) {
-        for (int i = minCell.x; i < maxCell.x; ++i) {
-            cells.emplace_back(vec2<int>{i, j});
-            std::cout << i << " " << j << std::endl;
-        }
-    }
-    return cells;
-}
-
 void Grid::AddTankToGridCell(Tank *tank) {
     grid[tank->gridCell.x][tank->gridCell.y].emplace_back(tank);
 }

@@ -69,7 +69,8 @@ namespace PP2 {
 
     void Surface::Clear(Pixel a_Color) {
         int s = m_Width * m_Height;
-        for (int i = 0; i < s; i++) m_Buffer[i] = a_Color;
+        //for (int i = 0; i < s; i++) m_Buffer[i] = a_Color;
+        memset(m_Buffer, a_Color, s);
     }
 
     void Surface::Centre(const char *a_String, int y1, Pixel color) {
@@ -186,7 +187,8 @@ namespace PP2 {
     void Surface::Bar(int x1, int y1, int x2, int y2, Pixel c) {
         Pixel *a = x1 + y1 * m_Pitch + m_Buffer;
         for (int y = y1; y <= y2; y++) {
-            for (int x = 0; x <= (x2 - x1); x++) a[x] = c;
+            for (int x = 0; x <= (x2 - x1); x++)
+                a[x] = c;
             a += m_Pitch;
         }
     }

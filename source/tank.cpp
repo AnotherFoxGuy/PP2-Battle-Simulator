@@ -53,6 +53,7 @@ void Tank::Tick()
     auto newGridCell = Grid::GetGridCell(position);
     if (gridCell != newGridCell)
     {
+        //Move tank to the new grid cell
         Grid::Instance()->MoveTankToGridCell(this, newGridCell);
         //Update grid cell
         gridCell = Grid::GetGridCell(position);

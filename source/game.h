@@ -19,6 +19,55 @@ namespace PP2 {
 
     class Particle_beam;
 
+    class Node{
+    public:
+
+        Node() : value(0), next(nullptr) {}
+        Node(int value) : value(value), next(nullptr) {}
+
+        int value;
+        Node* next;
+    };
+
+    class LinkedList{
+    public:
+        LinkedList() : head(nullptr) {}
+
+        void InsertValue(int value)
+        {
+            Node* new_node = new Node(value);
+
+            if(head == nullptr || value <= head->value)
+            {
+                new_node->next = head;
+                head = new_node;
+                return;
+            }
+
+            Node* current = head;
+            while(current->next != nullptr && value >= current->next->value)
+            {
+                current = current->next;
+            }
+
+            //Add node
+            new_node->next = current->next;
+            current->next = new_node;
+        }
+
+        void PrintList()
+        {
+            Node* current = head;
+            while (current != nullptr)
+            {
+                std::cout << current->value << ", ";
+                current = current->next;
+            }
+        }
+
+        Node* head;
+    };
+
     class Game {
     public:
         void SetTarget(Surface *surface) { screen = surface; }
@@ -33,12 +82,13 @@ namespace PP2 {
 
         void Tick(float deltaTime);
 
-        void insertion_sort_tanks_health(const std::vector<Tank> &original, std::vector<const Tank *> &sorted_tanks,
-                                         UINT16 begin, UINT16 end);
-
         void MeasurePerformance();
 
         Tank &FindClosestEnemy(Tank &current_tank);
+
+        std::vector<LinkedList> Sort(std::vector<Tank*> &input, int n_buckets);
+
+        void DrawTankHP(int i, char color, int health);
 
         void MouseUp(int button) { /* implement if you want to detect mouse button presses */
         }
@@ -58,6 +108,8 @@ namespace PP2 {
     private:
         Surface *screen;
         std::vector<Tank> tanks;
+        std::vector<Tank*> blueTanks;
+        std::vector<Tank*> redTanks;
         std::vector<Rocket> rockets;
         std::vector<Smoke> smokes;
         std::vector<Explosion> explosions;
@@ -80,5 +132,4 @@ namespace PP2 {
 
         ~Game();
     };
-
 }; // namespace PP2

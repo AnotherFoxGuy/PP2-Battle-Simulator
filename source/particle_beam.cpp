@@ -14,7 +14,7 @@ namespace PP2 {
         rectangle = Rectangle2D(min_position, max_position);
     }
 
-    void Particle_beam::tick(std::vector<Tank> &tanks) {
+    void Particle_beam::tick() {
 
         if (++sprite_frame == 30) {
             sprite_frame = 0;
