@@ -18,9 +18,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
-#ifdef USING_EASY_PROFILER
 #include <easy/profiler.h>
-#endif
 
 namespace PP2
 {
@@ -248,11 +246,9 @@ void swap()
 
 int main(int argc, char** argv)
 {
-#ifdef USING_EASY_PROFILER
     printf("profiler started.\n");
     EASY_PROFILER_ENABLE;
     profiler::startListen();
-#endif
 #ifdef _MSC_VER
     redirectIO();
 #endif
@@ -353,10 +349,8 @@ int main(int argc, char** argv)
             }
         }
     }
-#ifdef USING_EASY_PROFILER
     profiler::dumpBlocksToFile("test_profile.prof");
     profiler::stopListen();
-#endif
     game->Shutdown();
     SDL_Quit();
     return 0;

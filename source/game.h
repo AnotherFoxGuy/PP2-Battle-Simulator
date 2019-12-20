@@ -33,9 +33,6 @@ namespace PP2 {
 
         void Tick(float deltaTime);
 
-        void insertion_sort_tanks_health(const std::vector<Tank> &original, std::vector<const Tank *> &sorted_tanks,
-                                         UINT16 begin, UINT16 end);
-
         void MeasurePerformance();
 
         Tank &FindClosestEnemy(Tank &current_tank);
@@ -68,17 +65,8 @@ namespace PP2 {
 
         bool lock_update = false;
 
-        void UpdateTanks();
-
-        void UpdateSmoke();
-
-        void UpdateRockets();
-
-        void UpdateParticleBeams();
-
-        void UpdateExplosions();
-
         ~Game();
+        void insertion_sort_tanks_health(const std::vector<Tank>& original, std::vector<const Tank*>& sorted_tanks, uint16_t begin, uint16_t end);
     };
 
 }; // namespace PP2

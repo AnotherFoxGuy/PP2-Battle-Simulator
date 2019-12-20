@@ -2,9 +2,7 @@
 #include "defines.h"
 #include <mutex>
 
-#ifdef USING_EASY_PROFILER
 #include <easy/profiler.h>
-#endif
 
 using namespace std;
 using namespace PP2;
@@ -37,9 +35,7 @@ vec2<int> Grid::GetGridCell(vec2<> tankPos)
 
 vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
 {
-#ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Magenta);
-#endif
     std::vector<Tank*> ts;
     ts.clear();
     const vec2<int> checkCoords[9] = {
@@ -53,9 +49,10 @@ vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
         {0, -1},
         {1, -1},
     };
-
+    scoped_lock lock(gmtx);
     for (auto c : checkCoords)
     {
+
         int x = tankPos.x + c.x;
         int y = tankPos.y + c.y;
         if (x >= 0 && y >= 0 && x <= GRID_SIZE_X && y <= GRID_SIZE_Y)
@@ -73,13 +70,9 @@ void Grid::AddTankToGridCell(Tank* tank)
 void Grid::MoveTankToGridCell(PP2::Tank* tank, vec2<int> newpos)
 {
     scoped_lock lock(gmtx);
-#ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Magenta);
-#endif
     auto& c = grid[tank->gridCell.x][tank->gridCell.y];
     c.erase(std::remove(begin(c), end(c), tank), end(c));
     grid[newpos.x][newpos.y].push_back(tank);
-#ifdef USING_EASY_PROFILER
     //MICROPROFILE_COUNTER_SET("Grid/gird/", c.size());
-#endif
 }
