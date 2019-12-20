@@ -290,6 +290,9 @@ int main(int argc, char** argv)
         swap();
         surface->SetBuffer((Pixel*)framedata);
 #else
+#ifdef USING_EASY_PROFILER
+        EASY_FUNCTION(profiler::colors::Orange);
+#endif
         void* target = 0;
         int pitch;
         SDL_LockTexture(frameBuffer, NULL, &target, &pitch);

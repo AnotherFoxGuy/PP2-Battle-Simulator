@@ -4,13 +4,14 @@ using namespace std;
 #include "template.h"
 #include <cstdio>
 #include <iostream>
+#include <mutex>
 #include <string>
+#include <tbb/flow_graph.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
+#include <tbb/task_group.h>
 
 using namespace PP2;
-
-#include "ThreadPool.h"
 
 #include "Grid.h"
 #include "explosion.h"
@@ -23,6 +24,7 @@ using namespace PP2;
 
 #ifdef USING_EASY_PROFILER
 #include <easy/profiler.h>
+#define PROFILE_PARALLEL 0
 #endif
 
 static timer perf_timer;
@@ -149,18 +151,17 @@ void Game::Update(float deltaTime)
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    //Update tanks
-    UpdateTanks();
 
-    //Update smoke plumes
-    UpdateSmoke();
+    tbb::task_group g;
+
+    // Update tanks
+    UpdateTanks();
 
     //Update rockets
     UpdateRockets();
 
-    //Remove exploded rockets with remove erase idiom
-    rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket& rocket) { return !rocket.active; }),
-                  rockets.end());
+    //Update smoke plumes
+    UpdateSmoke();
 
     //Update particle beams
     UpdateParticleBeams();
@@ -168,10 +169,19 @@ void Game::Update(float deltaTime)
     //Update explosion sprites
     UpdateExplosions();
 
+    //Remove exploded rockets with remove erase idiom
+    g.run([&] {
+        rockets.erase(std::remove_if(rockets.begin(), rockets.end(), [](const Rocket& rocket) { return !rocket.active; }),
+                      rockets.end());
+    });
+
     //Remove when done with remove erase idiom
-    explosions.erase(std::remove_if(explosions.begin(), explosions.end(),
-                                    [](const Explosion& explosion) { return explosion.done(); }),
-                     explosions.end());
+    g.run([&] {
+        explosions.erase(std::remove_if(explosions.begin(), explosions.end(),
+                                        [](const Explosion& explosion) { return explosion.done(); }),
+                         explosions.end());
+    });
+    g.wait();
 }
 
 void Game::UpdateTanks()
@@ -180,8 +190,8 @@ void Game::UpdateTanks()
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     tbb::parallel_for(size_t(0), tanks.size(), [&](size_t i) {
-#ifdef USING_EASY_PROFILER
-        EASY_FUNCTION(profiler::colors::Yellow);
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Update Tank", profiler::colors::Gold);
 #endif
         Tank& tank = tanks[i];
         if (tank.active)
@@ -229,10 +239,10 @@ void Game::UpdateSmoke()
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    for (Smoke& smoke : smokes)
-    {
-        smoke.Tick();
-    }
+    //for (Smoke& smoke : smokes)
+    tbb::parallel_for(size_t(0), smokes.size(), [&](size_t i) {
+        smokes[i].Tick();
+    });
 }
 
 void Game::UpdateRockets()
@@ -241,8 +251,8 @@ void Game::UpdateRockets()
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     tbb::parallel_for(size_t(0), rockets.size(), [&](size_t i) {
-#ifdef USING_EASY_PROFILER
-        EASY_FUNCTION(profiler::colors::Yellow);
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Update Rocket", profiler::colors::Gold);
 #endif
         Rocket& rocket = rockets[i];
         rocket.Tick();
@@ -283,8 +293,9 @@ void Game::UpdateParticleBeams()
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    for (Particle_beam& particle_beam : particle_beams)
-    {
+    //for (Particle_beam& particle_beam : particle_beams)
+    tbb::parallel_for(size_t(0), particle_beams.size(), [&](size_t i) {
+        Particle_beam& particle_beam = particle_beams[i];
         particle_beam.tick(tanks);
 
         //Damage all tanks within the damage window of the beam (the window is an axis-aligned bounding box)
@@ -299,7 +310,7 @@ void Game::UpdateParticleBeams()
                 }
             }
         }
-    }
+    });
 }
 
 void Game::UpdateExplosions()
@@ -307,10 +318,10 @@ void Game::UpdateExplosions()
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    for (Explosion& explosion : explosions)
-    {
-        explosion.Tick();
-    }
+    //for (Explosion& explosion : explosions)
+    tbb::parallel_for(size_t(0), explosions.size(), [&](size_t i) {
+        explosions[i].Tick();
+    });
 }
 
 void Game::Draw()
@@ -327,6 +338,9 @@ void Game::Draw()
     //Draw sprites
     //for (int i = 0; i < ; i++)
     tbb::parallel_for(size_t(0), size_t(NUM_TANKS_BLUE + NUM_TANKS_RED), [&](size_t i) {
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Draw tanks", profiler::colors::Green);
+#endif
         tanks.at(i).Draw(screen);
 
         vec2<> tPos = tanks.at(i).Get_Position();
@@ -337,27 +351,42 @@ void Game::Draw()
     });
 
     tbb::parallel_for(size_t(0), rockets.size(), [&](size_t i) {
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Draw rockets", profiler::colors::Red);
+#endif
         rockets[i].Draw(screen);
     });
 
     //for (Smoke& smoke : smokes)
     tbb::parallel_for(size_t(0), smokes.size(), [&](size_t i) {
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Draw smokes", profiler::colors::Black);
+#endif
         smokes[i].Draw(screen);
     });
 
     //for (Particle_beam& particle_beam : particle_beams)
     tbb::parallel_for(size_t(0), particle_beams.size(), [&](size_t i) {
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Draw particle_beams", profiler::colors::Pink);
+#endif
         particle_beams[i].Draw(screen);
     });
 
     //for (Explosion& explosion : explosions)
     tbb::parallel_for(size_t(0), explosions.size(), [&](size_t i) {
+#if PROFILE_PARALLEL == 1
+        EASY_BLOCK("Draw explosions", profiler::colors::Orange);
+#endif
         explosions[i].Draw(screen);
     });
 
     //Draw sorted health bars
-    for (int t = 0; t < 2; t++)
-    {
+    //for (int t = 0; t < 2; t++)    {
+    tbb::parallel_for(size_t(0), size_t(2), [&](size_t t) {
+#ifdef USING_EASY_PROFILER
+        EASY_BLOCK("Draw sorted health bars", profiler::colors::Magenta);
+#endif
         const UINT16 NUM_TANKS = ((t < 1) ? NUM_TANKS_BLUE : NUM_TANKS_RED);
 
         const UINT16 begin = ((t < 1) ? 0 : NUM_TANKS_BLUE);
@@ -373,8 +402,11 @@ void Game::Draw()
             return a.health < b.health;
         });
 
-        for (int i = 0; i < NUM_TANKS; i++)
-        {
+        //for (int i = 0; i < NUM_TANKS; i++)
+        tbb::parallel_for(size_t(0), size_t(NUM_TANKS), [&](size_t i) {
+#if PROFILE_PARALLEL == 1
+            EASY_BLOCK("Draw tank on health bar", profiler::colors::Magenta);
+#endif
             int health_bar_start_x = i * (HEALTH_BAR_WIDTH + HEALTH_BAR_SPACING) + HEALTH_BARS_OFFSET_X;
             int health_bar_start_y = (t < 1) ? 0 : (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1;
             int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
@@ -383,8 +415,8 @@ void Game::Draw()
             screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
             screen->Bar(health_bar_start_x, health_bar_start_y + (int)((double)HEALTH_BAR_HEIGHT * (1 - ((double)sorted_tanks.at(i).health / (double)TANK_MAX_HEALTH))),
                         health_bar_end_x, health_bar_end_y, GREENMASK);
-        }
-    }
+        });
+    });
 }
 
 // -----------------------------------------------------------
@@ -423,6 +455,10 @@ void PP2::Game::MeasurePerformance()
 // -----------------------------------------------------------
 void Game::Tick(float deltaTime)
 {
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Indigo);
+#endif
+
     if (!lock_update)
     {
         Update(deltaTime);
