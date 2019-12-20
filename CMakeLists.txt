@@ -2,14 +2,16 @@ cmake_minimum_required(VERSION 3.12)
 project("PP2 Battle Simulator")
 
 option(USE_PACKAGE_MANAGER "Use conan for managing packages" ON)
-option(ENABLE_MICROPROFILE "Enable microprofile" OFF)
+option(ENABLE_EASY_PROFILER "Enable easy_profiler" OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 include(FeatureSummary)
 
 if (USE_PACKAGE_MANAGER)
     include(pmm)
-    pmm(CONAN REMOTES OGRE-dependencies https://api.bintray.com/conan/anotherfoxguy/OGRE-dependencies BINCRAFTERS
+    pmm(CONAN REMOTES OGRE-dependencies https://api.bintray.com/conan/anotherfoxguy/OGRE-dependencies
+            AnotherFoxGuy https://api.bintray.com/conan/anotherfoxguy/conan-packages
+            BINCRAFTERS
             CMakeCM ROLLING
             )
 else ()
@@ -63,13 +65,6 @@ ELSEIF (UNIX)
     set(CMAKE_MODULE_LINKER_FLAGS_DEBUG "${CMAKE_MODULE_LINKER_FLAGS_DEBUG} -Og -ggdb")
 endif (WIN32)
 
-
-if (ENABLE_MICROPROFILE)
-    include(FetchContent)
-    FetchContent_Declare(microprofile
-            GIT_REPOSITORY https://github.com/jonasmr/microprofile.git)
-    FetchContent_MakeAvailable(microprofile)
-endif (ENABLE_MICROPROFILE)
 
 add_subdirectory(source)
 

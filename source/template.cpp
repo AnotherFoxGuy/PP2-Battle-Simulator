@@ -17,10 +17,9 @@
 #include "surface.h"
 #include <SDL2/SDL.h>
 #include <iostream>
-#include <stdint.h>
 
-#ifdef USE_MICROPROFILE
-#include "microprofile.h"
+#ifdef USING_EASY_PROFILER
+#include <easy/profiler.h>
 #endif
 
 namespace PP2
@@ -249,6 +248,11 @@ void swap()
 
 int main(int argc, char** argv)
 {
+#ifdef USING_EASY_PROFILER
+    printf("profiler started.\n");
+    EASY_PROFILER_ENABLE;
+    profiler::startListen();
+#endif
 #ifdef _MSC_VER
     redirectIO();
 #endif
@@ -348,11 +352,12 @@ int main(int argc, char** argv)
                 break;
             }
         }
-#ifdef USE_MICROPROFILE
-        MicroProfileFlip(nullptr);
-#endif
     }
+#ifdef USING_EASY_PROFILER
+    profiler::dumpBlocksToFile("test_profile.prof");
+    profiler::stopListen();
+#endif
     game->Shutdown();
     SDL_Quit();
-    return 1;
+    return 0;
 }

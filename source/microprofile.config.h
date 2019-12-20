@@ -1,4 +1,0 @@
-#pragma once
-
-#define MICROPROFILE_ENABLED 1
-#define MICROPROFILE_GPU_TIMERS 0

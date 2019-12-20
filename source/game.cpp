@@ -21,8 +21,8 @@ using namespace PP2;
 
 #include "game.h"
 
-#ifdef USE_MICROPROFILE
-#include "microprofile.h"
+#ifdef USING_EASY_PROFILER
+#include <easy/profiler.h>
 #endif
 
 static timer perf_timer;
@@ -146,8 +146,8 @@ Tank& Game::FindClosestEnemy(Tank& current_tank)
 // -----------------------------------------------------------
 void Game::Update(float deltaTime)
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "Update", MP_YELLOW);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     //Update tanks
     UpdateTanks();
@@ -176,12 +176,12 @@ void Game::Update(float deltaTime)
 
 void Game::UpdateTanks()
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "UpdateTanks", MP_YELLOW);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     tbb::parallel_for(size_t(0), tanks.size(), [&](size_t i) {
-#ifdef USE_MICROPROFILE
-        MICROPROFILE_SCOPEI("Game", "Update tank", MP_YELLOW1);
+#ifdef USING_EASY_PROFILER
+        EASY_FUNCTION(profiler::colors::Yellow);
 #endif
         Tank& tank = tanks[i];
         if (tank.active)
@@ -226,8 +226,8 @@ void Game::UpdateTanks()
 
 void Game::UpdateSmoke()
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "UpdateSmoke", MP_YELLOW);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     for (Smoke& smoke : smokes)
     {
@@ -237,12 +237,12 @@ void Game::UpdateSmoke()
 
 void Game::UpdateRockets()
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "UpdateRockets", MP_YELLOW);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     tbb::parallel_for(size_t(0), rockets.size(), [&](size_t i) {
-#ifdef USE_MICROPROFILE
-        MICROPROFILE_SCOPEI("Game", "Update rocket", MP_YELLOW1);
+#ifdef USING_EASY_PROFILER
+        EASY_FUNCTION(profiler::colors::Yellow);
 #endif
         Rocket& rocket = rockets[i];
         rocket.Tick();
@@ -273,15 +273,15 @@ void Game::UpdateRockets()
             }
         }
     });
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_COUNTER_SET("Game/rockets/", rockets.size());
+#ifdef USING_EASY_PROFILER
+    //MICROPROFILE_COUNTER_SET("Game/rockets/", rockets.size());
 #endif
 }
 
 void Game::UpdateParticleBeams()
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "UpdateParticleBeams", MP_YELLOW);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     for (Particle_beam& particle_beam : particle_beams)
     {
@@ -304,8 +304,8 @@ void Game::UpdateParticleBeams()
 
 void Game::UpdateExplosions()
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "UpdateExplosions", MP_YELLOW);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     for (Explosion& explosion : explosions)
     {
@@ -315,8 +315,8 @@ void Game::UpdateExplosions()
 
 void Game::Draw()
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Game", "Draw", MP_GREEN);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     // clear the graphics window
     screen->Clear(0);

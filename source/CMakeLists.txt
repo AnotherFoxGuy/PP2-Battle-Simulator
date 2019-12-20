@@ -18,14 +18,6 @@ set(SOURCE_FILES
         defines.h
         Grid.{h,cpp})
 
-if (ENABLE_MICROPROFILE)
-    list(APPEND SOURCE_FILES
-            microprofile.config.h
-            ${microprofile_SOURCE_DIR}/microprofile_html.h
-            ${microprofile_SOURCE_DIR}/microprofile.{h,cpp}
-            )
-endif (ENABLE_MICROPROFILE)
-
 include(SourceFileUtils)
 
 # Expand file extensions (i.e. path/to/file.{h,cpp} becomes path/to/file.h;path/to/file.cpp)
@@ -48,7 +40,7 @@ else ()
     target_link_libraries(${PROJECT_NAME} PRIVATE ${FREEIMAGE_LIBRARY})
 endif ()
 
-if (USE_PACKAGE_MANAGER AND NOT ENABLE_MICROPROFILE)
+if (USE_PACKAGE_MANAGER)
     include(cotire)
     cotire(${PROJECT_NAME})
 endif ()
@@ -70,9 +62,9 @@ if (MSVC)
     )
 endif ()
 
-if (ENABLE_MICROPROFILE)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${microprofile_SOURCE_DIR})
-    target_compile_definitions(${PROJECT_NAME} PUBLIC USE_MICROPROFILE MICROPROFILE_USE_CONFIG)
+if (ENABLE_EASY_PROFILER)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC USING_EASY_PROFILER)
+    target_link_libraries(${PROJECT_NAME} PRIVATE CONAN_PKG::easy_profiler)
 endif ()
 
 add_custom_target(

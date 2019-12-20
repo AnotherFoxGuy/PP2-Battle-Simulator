@@ -2,8 +2,8 @@
 #include "defines.h"
 #include <mutex>
 
-#ifdef USE_MICROPROFILE
-#include "microprofile.h"
+#ifdef USING_EASY_PROFILER
+#include <easy/profiler.h>
 #endif
 
 using namespace std;
@@ -37,8 +37,8 @@ vec2<int> Grid::GetGridCell(vec2<> tankPos)
 
 vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
 {
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Grid", "GetTanksAtPos", MP_RED);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Magenta);
 #endif
     std::vector<Tank*> ts;
     ts.clear();
@@ -73,13 +73,13 @@ void Grid::AddTankToGridCell(Tank* tank)
 void Grid::MoveTankToGridCell(PP2::Tank* tank, vec2<int> newpos)
 {
     scoped_lock lock(gmtx);
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_SCOPEI("Grid", "MoveTankToGridCell", MP_RED);
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Magenta);
 #endif
     auto& c = grid[tank->gridCell.x][tank->gridCell.y];
     c.erase(std::remove(begin(c), end(c), tank), end(c));
     grid[newpos.x][newpos.y].push_back(tank);
-#ifdef USE_MICROPROFILE
-    MICROPROFILE_COUNTER_SET("Grid/gird/", c.size());
+#ifdef USING_EASY_PROFILER
+    //MICROPROFILE_COUNTER_SET("Grid/gird/", c.size());
 #endif
 }
