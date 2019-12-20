@@ -51,9 +51,7 @@ const static float tank_radius = 12.f;
 const static float rocket_radius = 10.f;
 
 mutex mtx;
-
 tf::Executor executor;
-tf::Taskflow taskflow;
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -147,6 +145,7 @@ Tank& Game::FindClosestEnemy(Tank& current_tank)
 void Game::Update(float deltaTime)
 {
     EASY_FUNCTION(profiler::colors::Yellow);
+    tf::Taskflow taskflow;
 
     // clear the graphics window
     screen->Clear(0);
@@ -157,7 +156,7 @@ void Game::Update(float deltaTime)
     //Update tanks
     auto [tanksS, tanksT] = taskflow.parallel_for(
         tanks.begin(), tanks.end(), [&](Tank& tank) {
-            EASY_FUNCTION(profiler::colors::Yellow);
+            EASY_FUNCTION(profiler::colors::Blue);
             if (tank.active)
             {
 
@@ -206,7 +205,7 @@ void Game::Update(float deltaTime)
     //Update rockets
     auto [rocketsS, rocketsT] = taskflow.parallel_for(
         rockets.begin(), rockets.end(), [&](Rocket& rocket) {
-            EASY_FUNCTION(profiler::colors::Yellow);
+            EASY_FUNCTION(profiler::colors::Purple);
             rocket.Tick();
 
             if (rocket.position.x < -100 || rocket.position.y < -100 || rocket.position.x > SCRHEIGHT * 2 + 100 || rocket.position.y > SCRWIDTH * 2 + 100)
@@ -319,8 +318,9 @@ void Game::Update(float deltaTime)
 
     tanksT.precede(particle_beamsS, rocketsS);
     rocketsS.precede(explosionsS, smokesS);
-    //explosionsS.precede(tanksT);
-    explosionsErase.precede(explosionsS);
+
+    explosionsS.precede(explosionsErase);
+    rocketsS.precede(rocketsErase);
 
     tanksT.precede(drawtanksS);
     smokesT.precede(drawsmokesS);
@@ -328,8 +328,8 @@ void Game::Update(float deltaTime)
     particle_beamsT.precede(drawparticle_beamsS);
     explosionsT.precede(drawexplosionsS);
 
-    executor.run(taskflow);
-    executor.wait_for_all();
+    executor.run(taskflow).get();
+    //executor.wait_for_all();
 
 #if 0
     taskflow.dump(std::cout);

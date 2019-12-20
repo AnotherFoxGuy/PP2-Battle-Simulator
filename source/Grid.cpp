@@ -36,6 +36,7 @@ vec2<int> Grid::GetGridCell(vec2<> tankPos)
 vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
 {
     EASY_FUNCTION(profiler::colors::Magenta);
+    scoped_lock lock(gmtx);
     std::vector<Tank*> ts;
     ts.clear();
     const vec2<int> checkCoords[9] = {
@@ -49,10 +50,9 @@ vector<Tank*> Grid::GetTanksAtPos(vec2<int> tankPos)
         {0, -1},
         {1, -1},
     };
-    scoped_lock lock(gmtx);
+
     for (auto c : checkCoords)
     {
-
         int x = tankPos.x + c.x;
         int y = tankPos.y + c.y;
         if (x >= 0 && y >= 0 && x <= GRID_SIZE_X && y <= GRID_SIZE_Y)
