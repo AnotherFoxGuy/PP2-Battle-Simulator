@@ -345,3 +345,5 @@ ASALocalRun/
 x64/Tmpl8_2019-01_debug.lib
 
 cmake-build-*/
+
+build_vs/

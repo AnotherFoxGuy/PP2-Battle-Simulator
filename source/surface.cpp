@@ -3,6 +3,7 @@
 
 
 #include "surface.h"
+#include <tbb/parallel_for.h>
 
 namespace PP2 {
 
@@ -68,9 +69,9 @@ namespace PP2 {
     }
 
     void Surface::Clear(Pixel a_Color) {
-        int s = m_Width * m_Height;
-        //for (int i = 0; i < s; i++) m_Buffer[i] = a_Color;
-        memset(m_Buffer, a_Color, s);
+//        int s = m_Width * m_Height;
+//        for (int i = 0; i < s; i++) m_Buffer[i] = a_Color;
+        memset(m_Buffer, a_Color, m_Width * m_Height * sizeof(Pixel));
     }
 
     void Surface::Centre(const char *a_String, int y1, Pixel color) {

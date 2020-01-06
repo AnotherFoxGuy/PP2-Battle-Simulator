@@ -118,7 +118,7 @@ Game::~Game() {
 // -----------------------------------------------------------
 // Iterates through all tanks and returns the closest enemy tank for the given tank
 // -----------------------------------------------------------
-Tank &Game::FindClosestEnemy(Tank &current_tank){
+Tank &Game::FindClosestEnemy(Tank &current_tank) {
     float closest_distance = numeric_limits<float>::infinity();
     int closest_index = 0;
 
@@ -304,14 +304,14 @@ void Game::Draw() {
     //Draw background
     background.Draw(screen, 0, 0);
 
-    tasks.push_back(pool.enqueue([&] {
+//    tasks.push_back(pool.enqueue([&] {
         for (Smoke &dSmoke : smokes) {
             dSmoke.Draw(screen);
         }
-    }));
-
-    //Draw sprites
-    tasks.push_back(pool.enqueue([&] {
+//    }));
+//
+//    //Draw sprites
+//    tasks.push_back(pool.enqueue([&] {
         for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++) {
             tanks.at(i).Draw(screen);
 
@@ -321,27 +321,31 @@ void Game::Draw() {
                 background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
                         background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);
         }
-    }));
-
-    tasks.push_back(pool.enqueue([&] {
+//    }));
+//
+//    tasks.push_back(pool.enqueue([&] {
         for (Rocket &dRocket : rockets) {
             dRocket.Draw(screen);
         }
-    }));
-
-    tasks.push_back(pool.enqueue([&] {
+//    }));
+//
+//    tasks.push_back(pool.enqueue([&] {
         for (Explosion &dExplosion : explosions) {
             dExplosion.Draw(screen);
         }
-    }));
-
-    tasks.push_back(pool.enqueue([&] {
+//    }));
+//
+//    tasks.push_back(pool.enqueue([&] {
         for (Particle_beam &dParticle_beam : particle_beams) {
             dParticle_beam.Draw(screen);
         }
-    }));
-
-    tasks.push_back(pool.enqueue([&] {
+//    }));
+//
+//    for (auto &function : tasks) {
+//        function.wait();
+//    }
+//
+//    tasks.push_back(pool.enqueue([&] {
         //Draw sorted health bars red tanks
         vector<LinkedList> redHealthBars = Sort(redTanks, 100);
         int countRed = 0;
@@ -353,9 +357,9 @@ void Game::Draw() {
                 countRed++;
             }
         }
-    }));
-
-    tasks.push_back(pool.enqueue([&] {
+//    }));
+//
+//    tasks.push_back(pool.enqueue([&] {
         //Draw sorted health bars blue tanks
         vector<LinkedList> blueHealthBars = Sort(blueTanks, 100);
         int countBlue = 0;
@@ -367,11 +371,11 @@ void Game::Draw() {
                 countBlue++;
             }
         }
-    }));
-
-    for (auto &function : tasks) {
-        function.wait();
-    }
+//    }));
+//
+//    for (auto &function : tasks) {
+//        function.wait();
+//    }
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
