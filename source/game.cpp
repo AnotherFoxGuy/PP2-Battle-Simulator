@@ -23,7 +23,7 @@ using namespace PP2;
 
 #ifdef USING_EASY_PROFILER
 #include <easy/profiler.h>
-#define PROFILE_PARALLEL 1
+#define PROFILE_PARALLEL 0
 #endif
 
 static timer perf_timer;
@@ -114,6 +114,9 @@ Game::~Game() {
 // Iterates through all tanks and returns the closest enemy tank for the given tank
 // -----------------------------------------------------------
 Tank &Game::FindClosestEnemy(Tank &current_tank) {
+#if PROFILE_PARALLEL == 1
+    EASY_FUNCTION(profiler::colors::Orange);
+#endif
     float closest_distance = numeric_limits<float>::infinity();
     int closest_index = 0;
 
@@ -311,12 +314,20 @@ void Game::Draw() {
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    // clear the graphics window
+#ifdef USING_EASY_PROFILER
+    EASY_BLOCK("Clear the graphics window", profiler::colors::Green);
+#endif
+    // Clear the graphics window
     screen->Clear(0);
-
+#ifdef USING_EASY_PROFILER
+    EASY_END_BLOCK
+    EASY_BLOCK("Draw background", profiler::colors::Green);
+#endif
     //Draw background
     background.Draw(screen, 0, 0);
-
+#ifdef USING_EASY_PROFILER
+    EASY_END_BLOCK
+#endif
     //Draw sprites
     //for (int i = 0; i < ; i++)
     //tbb::parallel_for(size_t(0), size_t(NUM_TANKS_BLUE + NUM_TANKS_RED), [&](size_t i) {
@@ -411,6 +422,19 @@ void Game::Draw() {
                         health_bar_end_x, health_bar_end_y, GREENMASK);
         }
     });
+
+    MeasurePerformance();
+
+    // print something in the graphics window
+    //screen->Print("hello world", 2, 2, 0xffffff);
+
+    // print something to the text window
+    //cout << "This goes to the console window." << std::endl;
+
+    //Print frame count
+    frame_count++;
+    string frame_count_string = "FRAME: " + std::to_string(frame_count);
+    frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
 }
 
 // -----------------------------------------------------------
@@ -422,6 +446,10 @@ void PP2::Game::MeasurePerformance() {
     char buffer[128];
     if (frame_count >= MAX_FRAMES) {
         if (!lock_update) {
+#ifdef USING_EASY_PROFILER
+            profiler::dumpBlocksToFile("test_profile.prof");
+            profiler::stopListen();
+#endif
             duration = perf_timer.elapsed();
             cout << "Duration was: " << duration << " (Replace REF_PERFORMANCE with this value)" << endl;
             lock_update = true;
@@ -447,18 +475,6 @@ void Game::Tick(float deltaTime) {
     if (!lock_update) {
         Update(deltaTime);
     }
-    Draw();
+    //Draw();
 
-    MeasurePerformance();
-
-    // print something in the graphics window
-    //screen->Print("hello world", 2, 2, 0xffffff);
-
-    // print something to the text window
-    //cout << "This goes to the console window." << std::endl;
-
-    //Print frame count
-    frame_count++;
-    string frame_count_string = "FRAME: " + std::to_string(frame_count);
-    frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
 }
