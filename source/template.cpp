@@ -18,6 +18,7 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <stdint.h>
+#include <tbb/task_group.h>
 
 #ifdef USE_MICROPROFILE
 #include "microprofile.h"
@@ -302,9 +303,13 @@ int main(int argc, char** argv)
                 t += pitch;
             }
         }
-        SDL_UnlockTexture(frameBuffer);
-        SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
-        SDL_RenderPresent(renderer);
+        tbb::task_group group;
+        group.run([&]{
+            SDL_UnlockTexture(frameBuffer);
+            SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
+            SDL_RenderPresent(renderer);
+        });
+
 #endif
         if (firstframe)
         {

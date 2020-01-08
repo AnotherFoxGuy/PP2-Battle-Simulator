@@ -71,7 +71,7 @@ namespace PP2 {
     void Surface::Clear(Pixel a_Color) {
 //        int s = m_Width * m_Height;
 //        for (int i = 0; i < s; i++) m_Buffer[i] = a_Color;
-        memset(m_Buffer, a_Color, m_Width * m_Height * sizeof(Pixel));
+            memset(m_Buffer, a_Color, m_Width * m_Height * sizeof(Pixel));
     }
 
     void Surface::Centre(const char *a_String, int y1, Pixel color) {
@@ -303,7 +303,7 @@ namespace PP2 {
         SetChar(47, "::o::", "::o::", ":::::", ":::::", ":::::"); // Tnx Ferry
         SetChar(48, "o:o:o", ":ooo:", "ooooo", ":ooo:", "o:o:o");
         SetChar(49, "::::o", ":::o:", "::o::", ":o:::", "o::::");
-        char c[] = "abcdefghijklmnopqrstuvwxyz0123456789!?:=,.-() #'*/";
+        char c[] = "abcdefghijklmnopqrstuvwxyz0123456789!?:=,.-()#'*/";
         int i;
         for (i = 0; i < 256; i++) s_Transl[i] = 45;
         for (i = 0; i < 50; i++) s_Transl[(unsigned char) c[i]] = i;
