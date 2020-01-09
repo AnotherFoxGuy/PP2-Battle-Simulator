@@ -340,11 +340,10 @@ void Game::SortHealthBars() {
     blueHealthBars = Sort(blueTanks, 100);
 }
 void Game::Draw() {
-    vector<future < void>>
-    tasks = {};
-
+#ifdef USING_EASY_PROFILER
+    EASY_FUNCTION(profiler::colors::Yellow);
+#endif
     //Draw background
-    //background.Draw(screen, 0, 0);
     SDL_RenderCopy(screen, background, NULL, NULL);
 
     //Draw sprites
@@ -353,28 +352,28 @@ void Game::Draw() {
 
         vec2 tPos = tanks.at(i).Get_Position();
         // tread marks
-        if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
+        /*if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
             background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
-                    background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);
+                    background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);*/
     }
 
-    for (Rocket &rocket : rockets) {
-        rocket.Draw(screen);
+    for (Rocket &r : rockets) {
+        r.Draw(screen);
     }
 
-    for (Smoke &smoke : smokes) {
-        smoke.Draw(screen);
+    for (Smoke &s : smokes) {
+        s.Draw(screen);
     }
 
-    for (Particle_beam &particle_beam : particle_beams) {
-        particle_beam.Draw(screen);
+    for (Particle_beam &b : particle_beams) {
+        b.Draw(screen);
     }
 
-    for (Explosion &explosion : explosions) {
-        explosion.Draw(screen);
+    for (Explosion &e : explosions) {
+        e.Draw(screen);
     }
     //Draw sorted health bars
-    for (int t = 0; t < 2; t++) {
+    /*for (int t = 0; t < 2; t++) {
         const UINT16 NUM_TANKS = ((t < 1) ? NUM_TANKS_BLUE : NUM_TANKS_RED);
 
         const UINT16 begin = ((t < 1) ? 0 : NUM_TANKS_BLUE);
@@ -392,9 +391,9 @@ void Game::Draw() {
                                                                                                       ((double) sorted_tanks.at(
                                                                                                               i)->health /
                                                                                                        (double) TANK_MAX_HEALTH))),
-                        health_bar_end_x, health_bar_end_y, GREENMASK);*/
+                        health_bar_end_x, health_bar_end_y, GREENMASK);
         }
-    }
+    }*/
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
@@ -412,8 +411,8 @@ void Game::DrawTankHP(int i, char color, int health) {
 // -----------------------------------------------------------
 // Sort tanks by health value using bucket sort
 // -----------------------------------------------------------
-vector <LinkedList> Game::Sort(vector<Tank *> &input, int n_buckets) {
-    vector<LinkedList> buckets(n_buckets);
+vector<LinkedList> Game::Sort(vector<Tank *> &input, int n_buckets) {
+    vector <LinkedList> buckets(n_buckets);
     for (auto &tank : input) {
         buckets.at(tank->health / n_buckets).InsertValue(tank->health);
     }
@@ -453,17 +452,11 @@ void PP2::Game::MeasurePerformance() {
 // Main application tick function
 // -----------------------------------------------------------
 void Game::Tick(float deltaTime) {
-    tbb::task_group group3;
+    if (!lock_update) {
+        Update(deltaTime);
+    }
 
-    group3.run([&] {
-        if (!lock_update) {
-            Update(deltaTime);
-        }
-    });
-    group3.run([&] {
-        Draw();
-    });
-    group3.wait();
+    Draw();
 
     MeasurePerformance();
 
