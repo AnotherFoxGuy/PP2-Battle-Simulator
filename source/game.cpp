@@ -64,8 +64,9 @@ const static vec2<> rocket_size(25, 24);
 const static float tank_radius = 12.f;
 const static float rocket_radius = 10.f;
 
-vector <LinkedList> redHealthBars = {};
-vector <LinkedList> blueHealthBars = {};
+vector<LinkedList> redHealthBars = {};
+vector<LinkedList> blueHealthBars = {};
+vector<SDL_Point> fdiofisdiof = {};
 
 #define LOAD_TEX(_FIELD_) SDL_CreateTextureFromSurface(screen, _FIELD_);
 
@@ -354,6 +355,7 @@ void Game::SortHealthBars() {
     redHealthBars = Sort(redTanks, 100);
     blueHealthBars = Sort(blueTanks, 100);
 }
+
 void Game::Draw() {
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
@@ -387,13 +389,80 @@ void Game::Draw() {
     for (Explosion &e : explosions) {
         e.Draw(screen);
     }
+
+    SDL_Rect red = {0, 0, SCRWIDTH, HEALTH_BAR_HEIGHT};
+    SDL_Rect blue = {0, (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1, SCRWIDTH, SCRWIDTH - 1};
+    SDL_SetRenderDrawColor(screen, 255, 0, 0, 255);
+    SDL_RenderFillRect(screen, &red);
+    SDL_RenderFillRect(screen, &blue);
+
+    SDL_SetRenderDrawColor(screen, 0, 255, 0, 255);
+
+#ifdef USING_EASY_PROFILER
+    EASY_BLOCK("Draw Health_Bar_Red", profiler::colors::Red);
+#endif
+    //Draw sorted health bars red tanks
+
+    int countRed = 0;
+    for (auto &bucket : redHealthBars) {
+        Node *currentRedTank = bucket.head;
+        while (currentRedTank != nullptr) {
+            DrawTankHP(countRed, 'r', currentRedTank->value);
+            currentRedTank = currentRedTank->next;
+            countRed++;
+        }
+    }
+
+    SDL_RenderDrawLines(screen, &fdiofisdiof[0], fdiofisdiof.size());
+    fdiofisdiof.clear();
+
+#ifdef USING_EASY_PROFILER
+    EASY_END_BLOCK
+    EASY_BLOCK("Draw Health_Bar_Blue", profiler::colors::Blue);
+#endif
+    //Draw sorted health bars blue tanks
+    int countBlue = 0;
+    for (auto &bucket : blueHealthBars) {
+        Node *currentBlueTank = bucket.head;
+        while (currentBlueTank != nullptr) {
+            DrawTankHP(countBlue, 'b', currentBlueTank->value);
+            currentBlueTank = currentBlueTank->next;
+            countBlue++;
+        }
+    }
+
+    SDL_RenderDrawLines(screen, &fdiofisdiof[0], fdiofisdiof.size());
+    fdiofisdiof.clear();
+#ifdef USING_EASY_PROFILER
+    EASY_END_BLOCK
+#endif
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
+    if (health < 0)
+        return;
+
     int health_bar_start_x = i * (HEALTH_BAR_WIDTH + HEALTH_BAR_SPACING) + HEALTH_BARS_OFFSET_X;
     int health_bar_start_y = (color == 'b') ? 0 : (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1;
     int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
     int health_bar_end_y = (color == 'b') ? HEALTH_BAR_HEIGHT : SCRHEIGHT - 1;
+
+    fdiofisdiof.emplace_back(SDL_Point{health_bar_start_x,
+                                       health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT * (1 - ((double) health /
+                                                                                                      (double) TANK_MAX_HEALTH)))});
+    fdiofisdiof.emplace_back(SDL_Point{health_bar_end_x, health_bar_end_y});
+
+    /*SDL_Rect r = {health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT *
+                                                                   (1 - ((double) health / (double) TANK_MAX_HEALTH))),
+                   health_bar_end_x, health_bar_end_y};
+    SDL_RenderFillRect(screen, &r);*/
+
+    /*SDL_RenderDrawLine(screen, health_bar_start_x,
+                       health_bar_start_y +
+                       (int) ((double) HEALTH_BAR_HEIGHT * (1 - ((double) health / (double) TANK_MAX_HEALTH))),
+                       health_bar_end_x,
+                       health_bar_end_y);*/
+
 
     /*screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
     screen->Bar(health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT *
