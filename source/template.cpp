@@ -125,7 +125,6 @@ using namespace std;
 int ACTWIDTH, ACTHEIGHT;
 static bool firstframe = true;
 
-Surface *surface = 0;
 Game *game = 0;
 SDL_Window *window = 0;
 
@@ -153,60 +152,27 @@ int main(int argc, char **argv) {
 #else
     window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN);
 #endif
-    surface = new Surface(SCRWIDTH, SCRHEIGHT);
-    surface->Clear(0);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED /* | SDL_RENDERER_PRESENTVSYNC*/);
-    SDL_Texture *frameBuffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
-                                                 SCRWIDTH, SCRHEIGHT);
 
     int exitapp = 0;
     game = new Game();
-    game->SetTarget(surface);
+    game->SetTarget(renderer);
     timer t;
     t.reset();
     while (!exitapp) {
 #ifdef USING_EASY_PROFILER
         EASY_FUNCTION(profiler::colors::Orange);
 #endif
-        void *target = 0;
-        int pitch;
-        SDL_LockTexture(frameBuffer, NULL, &target, &pitch);
-#ifdef USING_EASY_PROFILER
-        EASY_BLOCK("memcpy", profiler::colors::Blue);
-#endif
-        if (pitch == (surface->GetWidth() * 4)) {
-            memcpy(target, surface->GetBuffer(), SCRWIDTH * SCRHEIGHT * 4);
-        } else {
-            unsigned char *t = (unsigned char *) target;
-            for (int i = 0; i < SCRHEIGHT; i++) {
-                memcpy(t, surface->GetBuffer() + i * SCRWIDTH, SCRWIDTH * 4);
-                t += pitch;
-            }
+        SDL_RenderPresent(renderer);
+        if (firstframe) {
+
+            game->Init();
+            firstframe = false;
         }
-#ifdef USING_EASY_PROFILER
-        EASY_END_BLOCK;
-#endif
-        tbb::task_group group2;
-        group2.run([&] {
-#ifdef USING_EASY_PROFILER
-            EASY_BLOCK("Unlock", profiler::colors::Green);
-#endif
-            SDL_UnlockTexture(frameBuffer);
-            SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
-            SDL_RenderPresent(renderer);
-        });
 
-        group2.run([&] {
-            if (firstframe) {
-                game->Init();
-                firstframe = false;
-            }
-
-            // calculate frame time and pass it to game->Tick
-            game->Tick(t.elapsed());
-            t.reset();
-        });
-        group2.wait();
+        // calculate frame time and pass it to game->Tick
+        game->Tick(t.elapsed());
+        t.reset();
 
         // event loop
         SDL_Event event;

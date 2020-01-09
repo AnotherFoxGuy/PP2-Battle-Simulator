@@ -9,11 +9,11 @@ namespace PP2 {
     public:
         Particle_beam();
 
-        Particle_beam(vec2<> min, vec2<> max, Sprite *particle_beam_sprite, int damage);
+        Particle_beam(vec2<> min, vec2<> max, SDL_Texture *particle_beam_sprite, int damage);
 
         void tick();
 
-        void Draw(Surface *screen);
+        void Draw(SDL_Renderer *screen);
 
         vec2<> min_position;
         vec2<> max_position;
@@ -24,6 +24,9 @@ namespace PP2 {
 
         int damage;
 
-        Sprite *particle_beam_sprite;
+        SDL_Texture *particle_beam_sprite;
+
+        SDL_Rect SrcR;
+        SDL_Rect DestR;
     };
 } // namespace PP2

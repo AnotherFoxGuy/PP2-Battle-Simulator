@@ -1,6 +1,6 @@
 #pragma once
 
-#include "surface.h"
+#include "template.h"
 
 namespace PP2 {
 
@@ -11,7 +11,7 @@ namespace PP2 {
 
     class Tank {
     public:
-        Tank(float pos_x, float pos_y, allignments allignment, Sprite *tank_sprite, Sprite *smoke_sprite, float tar_x,
+        Tank(float pos_x, float pos_y, allignments allignment, SDL_Texture *tank_sprite, SDL_Texture *smoke_sprite, float tar_x,
              float tar_y, float collision_radius, int health, float max_speed);
 
         ~Tank();
@@ -30,7 +30,7 @@ namespace PP2 {
 
         bool hit(int hit_value);
 
-        void Draw(Surface *screen);
+        void Draw(SDL_Renderer *screen);
 
         int CompareHealth(const Tank &other) const;
 
@@ -55,8 +55,11 @@ namespace PP2 {
         allignments allignment;
 
         int current_frame;
-        Sprite *tank_sprite;
-        Sprite *smoke_sprite;
+        SDL_Texture *tank_sprite;
+        SDL_Texture *smoke_sprite;
+
+        SDL_Rect SrcR;
+        SDL_Rect DestR;
 
     };
 

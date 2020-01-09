@@ -3,9 +3,11 @@ cmake
 
 [requires]
 sdl2/2.0.10@bincrafters/stable
-#sdl2_image/2.0.5@bincrafters/stable
+sdl2_image/2.0.5@bincrafters/stable
+sdl2_ttf/2.0.15@bincrafters/stable
 easy_profiler/2.1.0@AnotherFoxGuy/stable
-freeimage/3.18.0@AnotherFoxGuy/stable
+libpng/1.6.37
+zlib/1.2.11
 tbb/2020.0
 
 [options]

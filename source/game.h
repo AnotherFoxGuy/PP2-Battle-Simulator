@@ -71,7 +71,7 @@ namespace PP2 {
 
     class Game {
     public:
-        void SetTarget(Surface *surface) { screen = surface; }
+        void SetTarget(SDL_Renderer *surface) { screen = surface; }
 
         void Init();
 
@@ -107,7 +107,7 @@ namespace PP2 {
         }
 
     private:
-        Surface *screen;
+        SDL_Renderer *screen;
         std::vector<Tank> tanks;
         std::vector<Tank*> blueTanks;
         std::vector<Tank*> redTanks;
@@ -116,7 +116,7 @@ namespace PP2 {
         std::vector<Explosion> explosions;
         std::vector<Particle_beam> particle_beams;
 
-        Font *frame_count_font;
+        //Font *frame_count_font;
         long long frame_count = 0;
 
         bool lock_update = false;

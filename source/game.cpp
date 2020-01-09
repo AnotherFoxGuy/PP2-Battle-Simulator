@@ -5,6 +5,7 @@ using namespace std;
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <SDL2/SDL.h>
 
 using namespace PP2;
 
@@ -29,23 +30,23 @@ static timer perf_timer;
 static float duration;
 
 //Load sprite files and initialize sprites
-static Surface *background_img = new Surface("assets/Background_Grass.png");
-static Surface *tank_red_img = new Surface("assets/Tank_Proj2.png");
-static Surface *tank_blue_img = new Surface("assets/Tank_Blue_Proj2.png");
-static Surface *rocket_red_img = new Surface("assets/Rocket_Proj2.png");
-static Surface *rocket_blue_img = new Surface("assets/Rocket_Blue_Proj2.png");
-static Surface *particle_beam_img = new Surface("assets/Particle_Beam.png");
-static Surface *smoke_img = new Surface("assets/Smoke.png");
-static Surface *explosion_img = new Surface("assets/Explosion.png");
+static SDL_Surface *background_img = SDL_LoadBMP("assets/Background_Grass.bmp");
+static SDL_Surface *tank_red_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *tank_blue_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *rocket_red_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *rocket_blue_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *particle_beam_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *smoke_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *explosion_img = SDL_LoadBMP("assets/ball.bmp");
 
-static Sprite background(background_img, 1);
-static Sprite tank_red(tank_red_img, 12);
-static Sprite tank_blue(tank_blue_img, 12);
-static Sprite rocket_red(rocket_red_img, 12);
-static Sprite rocket_blue(rocket_blue_img, 12);
-static Sprite smoke(smoke_img, 4);
-static Sprite explosion(explosion_img, 9);
-static Sprite particle_beam_sprite(particle_beam_img, 3);
+SDL_Texture *background;
+SDL_Texture *tank_red;
+SDL_Texture *tank_blue;
+SDL_Texture *rocket_red;
+SDL_Texture *rocket_blue;
+SDL_Texture *smoke;
+SDL_Texture *explosion;
+SDL_Texture *particle_beam_sprite;
 
 const static vec2<> tank_size(14, 18);
 const static vec2<> rocket_size(25, 24);
@@ -56,6 +57,9 @@ const static float rocket_radius = 10.f;
 vector <LinkedList> redHealthBars = {};
 vector <LinkedList> blueHealthBars = {};
 
+#define LOAD_TEX(_FIELD_) SDL_CreateTextureFromSurface(screen, _FIELD_);
+
+const static int threadCount = std::thread::hardware_concurrency() * 2;
 mutex mtx;
 
 // -----------------------------------------------------------
@@ -65,7 +69,17 @@ void Game::Init() {
     //initiate grid to allocate memory
     auto instance = Grid::Instance();
 
-    frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
+    background = LOAD_TEX(background_img);
+    tank_red = LOAD_TEX(tank_red_img);
+    tank_blue = LOAD_TEX(tank_blue_img);
+    rocket_red = LOAD_TEX(rocket_red_img);
+    rocket_blue = LOAD_TEX(rocket_blue_img);
+    smoke = LOAD_TEX(smoke_img);
+    explosion = LOAD_TEX(explosion_img);
+    particle_beam_sprite = LOAD_TEX(particle_beam_img);
+
+
+    //frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
 
     tanks.reserve(NUM_TANKS_BLUE + NUM_TANKS_RED);
     blueTanks.reserve(NUM_TANKS_BLUE);
@@ -85,21 +99,21 @@ void Game::Init() {
     //Spawn blue tanks
     for (int i = 0; i < NUM_TANKS_BLUE; i++) {
         tanks.push_back(Tank(start_blue_x + ((i % max_rows) * spacing), start_blue_y + ((i / max_rows) * spacing), BLUE,
-                             &tank_blue, &smoke, 1200, 600, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
+                             tank_blue, smoke, 1200, 600, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
     }
     //Spawn red tanks
     for (int i = 0; i < NUM_TANKS_RED; i++) {
         tanks.push_back(
-                Tank(start_red_x + ((i % max_rows) * spacing), start_red_y + ((i / max_rows) * spacing), RED, &tank_red,
-                     &smoke, 80, 80, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
+                Tank(start_red_x + ((i % max_rows) * spacing), start_red_y + ((i / max_rows) * spacing), RED, tank_red,
+                     smoke, 80, 80, tank_radius, TANK_MAX_HEALTH, TANK_MAX_SPEED));
     }
 
-    particle_beams.push_back(Particle_beam(vec2<>(SCRWIDTH / 2, SCRHEIGHT / 2), vec2<>(100, 50), &particle_beam_sprite,
+    particle_beams.push_back(Particle_beam(vec2<>(SCRWIDTH / 2, SCRHEIGHT / 2), vec2<>(100, 50), particle_beam_sprite,
                                            PARTICLE_BEAM_HIT_VALUE));
     particle_beams.push_back(
-            Particle_beam(vec2<>(80, 80), vec2<>(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
+            Particle_beam(vec2<>(80, 80), vec2<>(100, 50), particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
     particle_beams.push_back(
-            Particle_beam(vec2<>(1200, 600), vec2<>(100, 50), &particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
+            Particle_beam(vec2<>(1200, 600), vec2<>(100, 50), particle_beam_sprite, PARTICLE_BEAM_HIT_VALUE));
 
     for (auto &tank : tanks) {
         instance->AddTankToGridCell(&tank);
@@ -117,7 +131,7 @@ void Game::Shutdown() {
 }
 
 Game::~Game() {
-    delete frame_count_font;
+    //delete frame_count_font;
 }
 
 // -----------------------------------------------------------
@@ -241,7 +255,7 @@ void Game::UpdateTanks() {
                                                    (target.Get_Position() - tank.position).normalized() * 3,
                                                    rocket_radius,
                                                    tank.allignment,
-                                                   ((tank.allignment == RED) ? &rocket_red : &rocket_blue));
+                                                   ((tank.allignment == RED) ? rocket_red : rocket_blue));
 
                               tank.Reload_Rocket();
                           }
@@ -282,7 +296,7 @@ void Game::UpdateRockets() {
                                       if (tank->active && (tank->allignment != uRocket.allignment) &&
                                           uRocket.Intersects(tank->position, tank->collision_radius)) {
                                           scoped_lock lock(mtx);
-                                          explosions.push_back(Explosion(&explosion, tank->position));
+                                          explosions.push_back(Explosion(explosion, tank->position));
 
                                           if (tank->hit(ROCKET_HIT_VALUE)) {
                                               smokes.push_back(Smoke(smoke, tank->position - vec2<>(0, 48)));
@@ -326,128 +340,61 @@ void Game::SortHealthBars() {
     blueHealthBars = Sort(blueTanks, 100);
 }
 void Game::Draw() {
-#ifdef USING_EASY_PROFILER
-    EASY_FUNCTION(profiler::colors::Yellow);
-#endif
-#ifdef USING_EASY_PROFILER
-    EASY_BLOCK("Clear graphics", profiler::colors::Green);
-#endif
-    // clear the graphics window
-    screen->Clear(0x00);
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-    EASY_BLOCK("Draw background", profiler::colors::Green);
-#endif
+    vector<future < void>>
+    tasks = {};
+
     //Draw background
-    background.Draw(screen, 0, 0);
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-#endif
-#if PROFILE_PARALLEL == 1
-    EASY_BLOCK("Draw smokes", profiler::colors::Black);
-#endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, smokes.size()),
-                      [&](tbb::blocked_range<int> r) {
+    //background.Draw(screen, 0, 0);
+    SDL_RenderCopy(screen, background, NULL, NULL);
 
-                          for (int i = r.begin(); i < r.end(); ++i) {
-                              smokes[i].Draw(screen);
-                          }
-                      });
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-#endif
-#if PROFILE_PARALLEL == 1
-    EASY_BLOCK("Draw tanks", profiler::colors::Red);
-#endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, NUM_TANKS_BLUE + NUM_TANKS_RED),
-                      [&](tbb::blocked_range<int> r) {
+    //Draw sprites
+    for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++) {
+        tanks.at(i).Draw(screen);
 
-                          for (int i = r.begin(); i < r.end(); ++i) {
-                              tanks.at(i).Draw(screen);
+        vec2 tPos = tanks.at(i).Get_Position();
+        // tread marks
+        if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
+            background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
+                    background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);
+    }
 
-                              vec2<> tPos = tanks.at(i).Get_Position();
-                              // tread marks
-                              if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
-                                  background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
-                                          background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);
-                          }
-                      });
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-#endif
-#if PROFILE_PARALLEL == 1
-    EASY_BLOCK("Draw rockets", profiler::colors::Red);
-#endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, rockets.size()),
-                      [&](tbb::blocked_range<int> r) {
+    for (Rocket &rocket : rockets) {
+        rocket.Draw(screen);
+    }
 
-                          for (int i = r.begin(); i < r.end(); ++i) {
-                              rockets[i].Draw(screen);
-                          }
-                      });
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-#endif
-#if PROFILE_PARALLEL == 1
-    EASY_BLOCK("Draw explosions", profiler::colors::Orange);
-#endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, explosions.size()),
-                      [&](tbb::blocked_range<int> r) {
+    for (Smoke &smoke : smokes) {
+        smoke.Draw(screen);
+    }
 
-                          for (int i = r.begin(); i < r.end(); ++i) {
-                              explosions[i].Draw(screen);
-                          }
-                      });
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-#endif
-#if PROFILE_PARALLEL == 1
-    EASY_BLOCK("Draw particle_beams", profiler::colors::Pink);
-#endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, particle_beams.size()),
-                      [&](tbb::blocked_range<int> r) {
+    for (Particle_beam &particle_beam : particle_beams) {
+        particle_beam.Draw(screen);
+    }
 
-                          for (int i = r.begin(); i < r.end(); ++i) {
-                              particle_beams[i].Draw(screen);
-                          }
-                      });
-#ifdef USING_EASY_PROFILER
-    EASY_END_BLOCK
-#endif
-    tbb::task_group group;
+    for (Explosion &explosion : explosions) {
+        explosion.Draw(screen);
+    }
+    //Draw sorted health bars
+    for (int t = 0; t < 2; t++) {
+        const UINT16 NUM_TANKS = ((t < 1) ? NUM_TANKS_BLUE : NUM_TANKS_RED);
 
-    group.run([&] {
-#if PROFILE_PARALLEL == 1
-        EASY_BLOCK("Draw Health_Bar_Red", profiler::colors::Red);
-#endif
-        //Draw sorted health bars red tanks
-        int countRed = 0;
-        for (auto &bucket : redHealthBars) {
-            Node *currentRedTank = bucket.head;
-            while (currentRedTank != nullptr) {
-                DrawTankHP(countRed, 'r', currentRedTank->value);
-                currentRedTank = currentRedTank->next;
-                countRed++;
-            }
+        const UINT16 begin = ((t < 1) ? 0 : NUM_TANKS_BLUE);
+        std::vector<const Tank *> sorted_tanks;
+        insertion_sort_tanks_health(tanks, sorted_tanks, begin, begin + NUM_TANKS);
+
+        for (int i = 0; i < NUM_TANKS; i++) {
+            int health_bar_start_x = i * (HEALTH_BAR_WIDTH + HEALTH_BAR_SPACING) + HEALTH_BARS_OFFSET_X;
+            int health_bar_start_y = (t < 1) ? 0 : (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1;
+            int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
+            int health_bar_end_y = (t < 1) ? HEALTH_BAR_HEIGHT : SCRHEIGHT - 1;
+
+            /*screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
+            screen->Bar(health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT * (1 -
+                                                                                                      ((double) sorted_tanks.at(
+                                                                                                              i)->health /
+                                                                                                       (double) TANK_MAX_HEALTH))),
+                        health_bar_end_x, health_bar_end_y, GREENMASK);*/
         }
-    });
-
-    group.run([&] {
-#if PROFILE_PARALLEL == 1
-        EASY_BLOCK("Draw Health_Bar_Blue", profiler::colors::Blue);
-#endif
-        //Draw sorted health bars blue tanks
-        int countBlue = 0;
-        for (auto &bucket : blueHealthBars) {
-            Node *currentBlueTank = bucket.head;
-            while (currentBlueTank != nullptr) {
-                DrawTankHP(countBlue, 'b', currentBlueTank->value);
-                currentBlueTank = currentBlueTank->next;
-                countBlue++;
-            }
-        }
-    });
-    group.wait();
+    }
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
@@ -456,17 +403,17 @@ void Game::DrawTankHP(int i, char color, int health) {
     int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
     int health_bar_end_y = (color == 'b') ? HEALTH_BAR_HEIGHT : SCRHEIGHT - 1;
 
-    screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
+    /*screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
     screen->Bar(health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT *
                                                                 (1 - ((double) health / (double) TANK_MAX_HEALTH))),
-                health_bar_end_x, health_bar_end_y, GREENMASK);
+                health_bar_end_x, health_bar_end_y, GREENMASK);*/
 }
 
 // -----------------------------------------------------------
 // Sort tanks by health value using bucket sort
 // -----------------------------------------------------------
-vector<LinkedList> Game::Sort(vector<Tank *> &input, int n_buckets) {
-    vector <LinkedList> buckets(n_buckets);
+vector <LinkedList> Game::Sort(vector<Tank *> &input, int n_buckets) {
+    vector<LinkedList> buckets(n_buckets);
     for (auto &tank : input) {
         buckets.at(tank->health / n_buckets).InsertValue(tank->health);
     }
@@ -491,12 +438,14 @@ void PP2::Game::MeasurePerformance() {
     }
 
     if (lock_update) {
-        screen->Bar(420, 170, 870, 430, 0x030000);
+        //screen->Bar(420, 170, 870, 430, 0x030000);
         int ms = (int) duration % 1000, sec = ((int) duration / 1000) % 60, min = ((int) duration / 60000);
         sprintf(buffer, "%02i:%02i:%03i", min, sec, ms);
-        frame_count_font->Centre(screen, buffer, 200);
+        cout << buffer << endl;
+        //frame_count_font->Centre(screen, buffer, 200);
         sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
-        frame_count_font->Centre(screen, buffer, 340);
+        cout << buffer << endl;
+        //frame_count_font->Centre(screen, buffer, 340);
     }
 }
 
@@ -526,8 +475,8 @@ void Game::Tick(float deltaTime) {
 
     //Print frame count
     frame_count++;
-    string frame_count_string = "FRAME: " + std::to_string(frame_count);
-    frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
+    /*string frame_count_string = "FRAME: " + std::to_string(frame_count);
+    frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);*/
 }
 
 
