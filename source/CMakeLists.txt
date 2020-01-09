@@ -61,12 +61,6 @@ if (MSVC)
             PROPERTY
             VS_STARTUP_PROJECT ${PROJECT_NAME}
     )
-    # set Visual Studio working directory to the Configuration directory
-    set_target_properties(
-            ${PROJECT_NAME}
-            PROPERTIES
-            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/$(Configuration)"
-    )
 endif ()
 
 if (ENABLE_MICROPROFILE)

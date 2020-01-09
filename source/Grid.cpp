@@ -10,6 +10,7 @@ using namespace std;
 using namespace PP2;
 
 Grid *Grid::instance = nullptr;
+mutex mtx2;
 
 Grid::Grid() {
     for (auto &x : grid)
@@ -59,11 +60,11 @@ void Grid::MoveTankToGridCell(PP2::Tank *tank, vec2<int> newPos) {
 #ifdef USE_MICROPROFILE
     MICROPROFILE_SCOPEI("Grid", "MoveTankToGridCell", MP_RED);
 #endif
-    auto &gc = grid[tank->gridCell.x][tank->gridCell.y];
+    auto &gridCell = grid[tank->gridCell.x][tank->gridCell.y];
     grid[newPos.x][newPos.y].emplace_back(tank);
-    for (int i = 0; i < gc.size(); ++i) {
-        if (gc[i] == tank) {
-            gc.erase(gc.begin() + i);
+    for (int i = 0; i < gridCell.size(); ++i) {
+        if (gridCell[i] == tank) {
+            gridCell.erase(gridCell.begin() + i);
             break;
         }
     }

@@ -11,5 +11,5 @@ tbb/2020.0
 tbb:shared=True
 
 [imports]
-bin, *.dll -> ./source @ keep_path=False
-lib, *.so* -> ./source @ keep_path=False
+bin, *.dll -> . @ keep_path=False
+lib, *.so* -> . @ keep_path=False

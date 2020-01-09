@@ -129,20 +129,6 @@ void NotifyUser(const char* s)
 using namespace PP2;
 using namespace std;
 
-#ifdef ADVANCEDGL
-
-PFNGLGENBUFFERSPROC glGenBuffers = 0;
-PFNGLBINDBUFFERPROC glBindBuffer = 0;
-PFNGLBUFFERDATAPROC glBufferData = 0;
-PFNGLMAPBUFFERPROC glMapBuffer = 0;
-PFNGLUNMAPBUFFERPROC glUnmapBuffer = 0;
-typedef BOOL(APIENTRY* PFNWGLSWAPINTERVALFARPROC)(int);
-PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT = 0;
-unsigned int framebufferTexID[2];
-GLuint fbPBO[2];
-unsigned char* framedata = 0;
-
-#endif
 
 int ACTWIDTH, ACTHEIGHT;
 static bool firstframe = true;
@@ -157,97 +143,6 @@ void redirectIO()
 }
 #endif
 
-#ifdef ADVANCEDGL
-
-bool createFBtexture()
-{
-    glGenTextures(2, framebufferTexID);
-    if (glGetError()) return false;
-    for (int i = 0; i < 2; i++)
-    {
-        glBindTexture(GL_TEXTURE_2D, framebufferTexID[i]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCRWIDTH, SCRHEIGHT, 0, GL_BGRA, GL_UNSIGNED_BYTE, NULL);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        if (glGetError()) return false;
-    }
-    const int sizeMemory = 4 * SCRWIDTH * SCRHEIGHT;
-    glGenBuffers(2, fbPBO);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, fbPBO[0]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, sizeMemory, NULL, GL_STREAM_DRAW_ARB);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, fbPBO[1]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, sizeMemory, NULL, GL_STREAM_DRAW_ARB);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
-    glBindTexture(GL_TEXTURE_2D, framebufferTexID[0]);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, fbPBO[0]);
-    framedata = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB);
-    if (!framedata) return false;
-    memset(framedata, 0, SCRWIDTH * SCRHEIGHT * 4);
-    return (glGetError() == 0);
-}
-
-bool init()
-{
-    fbPBO[0] = fbPBO[1] = -1;
-    glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffersARB");
-    glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBufferARB");
-    glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferDataARB");
-    glMapBuffer = (PFNGLMAPBUFFERPROC)wglGetProcAddress("glMapBufferARB");
-    glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)wglGetProcAddress("glUnmapBufferARB");
-    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
-    if ((!glGenBuffers) || (!glBindBuffer) || (!glBufferData) || (!glMapBuffer) || (!glUnmapBuffer)) return false;
-    if (glGetError()) return false;
-    glViewport(0, 0, SCRWIDTH, SCRHEIGHT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, 1, 0, 1, -1, 1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glEnable(GL_TEXTURE_2D);
-    glShadeModel(GL_SMOOTH);
-    if (!createFBtexture()) return false;
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    if (wglSwapIntervalEXT) wglSwapIntervalEXT(0);
-    surface = new Surface(SCRWIDTH, SCRHEIGHT, 0, SCRWIDTH);
-    return true;
-}
-
-void swap()
-{
-    static int index = 0;
-    int nextindex;
-    glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB);
-    glBindTexture(GL_TEXTURE_2D, framebufferTexID[index]);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, fbPBO[index]);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, SCRWIDTH, SCRHEIGHT, GL_BGRA, GL_UNSIGNED_BYTE, 0);
-    nextindex = (index + 1) % 2;
-    index = (index + 1) % 2;
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, fbPBO[nextindex]);
-    framedata = (unsigned char*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glBegin(GL_QUADS);
-    glNormal3f(0, 0, 1);
-    glTexCoord2f(0.0f, 0.0f);
-    glVertex2f(0.0f, 1.0f);
-    glTexCoord2f(1.0f, 0.0f);
-    glVertex2f(1.0f, 1.0f);
-    glTexCoord2f(1.0f, 1.0f);
-    glVertex2f(1.0f, 0.0f);
-    glTexCoord2f(0.0f, 1.0f);
-    glVertex2f(0.0f, 0.0f);
-    glEnd();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    SDL_GL_SwapWindow(window);
-}
-
-#endif
-
 int main(int argc, char** argv)
 {
 #ifdef _MSC_VER
@@ -255,16 +150,7 @@ int main(int argc, char** argv)
 #endif
     printf("application started.\n");
     SDL_Init(SDL_INIT_VIDEO);
-#ifdef ADVANCEDGL
-#ifdef FULLSCREEN
-    window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
-#else
-    window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
-#endif
-    SDL_GLContext glContext = SDL_GL_CreateContext(window);
-    init();
-    ShowCursor(false);
-#else
+
 #ifdef FULLSCREEN
     window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN);
 #else
@@ -275,7 +161,7 @@ int main(int argc, char** argv)
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED /* | SDL_RENDERER_PRESENTVSYNC*/);
     SDL_Texture* frameBuffer = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
                                                  SCRWIDTH, SCRHEIGHT);
-#endif
+
     int exitapp = 0;
     game = new Game();
     game->SetTarget(surface);
@@ -283,10 +169,7 @@ int main(int argc, char** argv)
     t.reset();
     while (!exitapp)
     {
-#ifdef ADVANCEDGL
-        swap();
-        surface->SetBuffer((Pixel*)framedata);
-#else
+
         void* target = 0;
         int pitch;
         SDL_LockTexture(frameBuffer, NULL, &target, &pitch);
@@ -303,23 +186,26 @@ int main(int argc, char** argv)
                 t += pitch;
             }
         }
-        tbb::task_group group;
-        group.run([&]{
+        tbb::task_group group2;
+        group2.run([&]{
             SDL_UnlockTexture(frameBuffer);
             SDL_RenderCopy(renderer, frameBuffer, NULL, NULL);
             SDL_RenderPresent(renderer);
         });
 
-#endif
-        if (firstframe)
-        {
-            game->Init();
-            firstframe = false;
-        }
+        group2.run([&] {
+            if (firstframe)
+            {
+                game->Init();
+                firstframe = false;
+            }
 
-        // calculate frame time and pass it to game->Tick
-        game->Tick(t.elapsed());
-        t.reset();
+            // calculate frame time and pass it to game->Tick
+            game->Tick(t.elapsed());
+            t.reset();
+        });
+        group2.wait();
+        
         // event loop
         SDL_Event event;
         while (SDL_PollEvent(&event))

@@ -336,6 +336,8 @@ namespace PP2 {
         delete[] m_Start;
     }
 
+
+
     void Sprite::Draw(Surface *a_Target, int a_X, int a_Y) {
         //If out of screen skip
         if ((a_X < -m_Width) || (a_X > (a_Target->GetWidth() + m_Width))) return;

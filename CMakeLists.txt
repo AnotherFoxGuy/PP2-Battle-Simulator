@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 project("PP2 Battle Simulator")
 
+SET(RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/")
+SET(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/")
+SET(ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/")
+
 option(USE_PACKAGE_MANAGER "Use conan for managing packages" ON)
 option(ENABLE_MICROPROFILE "Enable microprofile" OFF)
 

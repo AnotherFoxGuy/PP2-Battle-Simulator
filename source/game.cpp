@@ -105,7 +105,6 @@ void Game::Init() {
         else
             blueTanks.emplace_back(&tank);
     }
-
 }
 
 // -----------------------------------------------------------
