@@ -23,7 +23,9 @@ using namespace PP2;
 #include "game.h"
 
 #ifdef USING_EASY_PROFILER
+
 #include <easy/profiler.h>
+
 #define PROFILE_PARALLEL 1
 #endif
 
@@ -44,7 +46,8 @@ TTF_Font *Sans;
 // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
 static SDL_Color White = {255, 255, 255};
 static SDL_Rect framecounter_message_rect = {50, 50, 500, 100}; //create a rect
-
+SDL_Surface *text_surface;
+SDL_Texture *text_texture;
 
 SDL_Texture *background;
 SDL_Texture *tank_red;
@@ -86,7 +89,7 @@ void Game::Init() {
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
 
-    Sans = TTF_OpenFont("assets/Roboto-Regular.ttf", 150); //this opens a font style and sets a size
+    Sans = TTF_OpenFont("assets/Roboto-Regular.ttf", 10); //this opens a font style and sets a size
 
 
     //frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
@@ -142,6 +145,8 @@ void Game::Shutdown() {
 
 Game::~Game() {
     //delete frame_count_font;
+    SDL_DestroyTexture(text_texture);
+    SDL_FreeSurface(text_surface);
 }
 
 // -----------------------------------------------------------
@@ -440,21 +445,21 @@ void PP2::Game::MeasurePerformance() {
         //frame_count_font->Centre(screen, buffer, 200);
 
         // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-        SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Sans, buffer, White);
+        text_surface = TTF_RenderText_Solid(Sans, buffer, White);
         //now you can convert it into a texture
-        SDL_Texture *Message = SDL_CreateTextureFromSurface(screen, surfaceMessage);
+        text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
 
-
+        //SDL_BlitSurface(surfaceMessage,NULL,text_surface,NULL);
         SDL_Rect final_message_rect = {420, 170, 450, 25}; //create a rect
 
         //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
         //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
         //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
-        SDL_RenderCopy(screen, Message, NULL, &final_message_rect);
+        SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
 
         //Don't forget too free your surface and texture
-        SDL_FreeSurface(surfaceMessage);
-        SDL_DestroyTexture(Message);
+        //SDL_FreeSurface(surfaceMessage);
+        //SDL_DestroyTexture(Message);
 
     }
 }
@@ -476,24 +481,26 @@ void Game::Tick(float deltaTime) {
 
     // print something to the text window
     //cout << "This goes to the console window." << std::endl;
+#if PROFILE_PARALLEL == 1
+    EASY_BLOCK("Print frame count", profiler::colors::Gold);
+#endif
+    if (!lock_update) {
+        //Print frame count
+        frame_count++;
+        //frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
+        char buffer[15];
+        sprintf(buffer, "FRAME: %lld", frame_count);
+        // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+        text_surface = TTF_RenderText_Solid(Sans, buffer, White);
+        //now you can convert it into a texture
+        text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
 
-    //Print frame count
-    frame_count++;
-    //frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
-    char buffer[15];
-    sprintf(buffer, "FRAME: %lld", frame_count);
-    // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-    SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Sans, buffer, White);
-    //now you can convert it into a texture
-    SDL_Texture *Message = SDL_CreateTextureFromSurface(screen, surfaceMessage);
-
-    //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
-    //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
-    //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
-    SDL_RenderCopy(screen, Message, NULL, &framecounter_message_rect);
-    //Don't forget too free your surface and texture
-    SDL_FreeSurface(surfaceMessage);
-    SDL_DestroyTexture(Message);
+        //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
+        //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
+        //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
+        SDL_RenderCopy(screen, text_texture, NULL, &framecounter_message_rect);
+        //Don't forget too free your surface and texture
+    }
 }
 
 

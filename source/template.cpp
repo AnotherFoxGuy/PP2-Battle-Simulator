@@ -165,17 +165,21 @@ int main(int argc, char **argv) {
 #ifdef USING_EASY_PROFILER
         EASY_FUNCTION(profiler::colors::Orange);
 #endif
-        SDL_RenderPresent(renderer);
         if (firstframe) {
 
             game->Init();
             firstframe = false;
         }
-
         // calculate frame time and pass it to game->Tick
         game->Tick(t.elapsed());
         t.reset();
-
+#ifdef USING_EASY_PROFILER
+        EASY_BLOCK("SDL_RenderPresent", profiler::colors::Green);
+#endif
+        SDL_RenderPresent(renderer);
+#ifdef USING_EASY_PROFILER
+        EASY_END_BLOCK;
+#endif
         // event loop
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -213,5 +217,6 @@ int main(int argc, char **argv) {
 #endif
     game->Shutdown();
     SDL_Quit();
+    TTF_Quit();
     return 0;
 }
