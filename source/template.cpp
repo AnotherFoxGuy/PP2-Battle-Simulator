@@ -147,6 +147,8 @@ int main(int argc, char **argv) {
     printf("application started.\n");
     SDL_Init(SDL_INIT_VIDEO);
 
+    TTF_Init();
+
 #ifdef FULLSCREEN
     window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_FULLSCREEN);
 #else

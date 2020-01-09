@@ -6,11 +6,12 @@ using namespace std;
 #include <iostream>
 #include <string>
 #include <SDL2/SDL.h>
+#include <tbb/parallel_for.h>
+#include <tbb/task_group.h>
+#include <SDL2/SDL_ttf.h>
 
 using namespace PP2;
 
-#include <tbb/parallel_for.h>
-#include <tbb/task_group.h>
 #include "ThreadPool.h"
 #include "Grid.h"
 #include "explosion.h"
@@ -39,6 +40,12 @@ static SDL_Surface *particle_beam_img = SDL_LoadBMP("assets/ball.bmp");
 static SDL_Surface *smoke_img = SDL_LoadBMP("assets/ball.bmp");
 static SDL_Surface *explosion_img = SDL_LoadBMP("assets/ball.bmp");
 
+TTF_Font *Sans;
+// this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+static SDL_Color White = {255, 255, 255};
+static SDL_Rect framecounter_message_rect = {50, 50, 500, 100}; //create a rect
+
+
 SDL_Texture *background;
 SDL_Texture *tank_red;
 SDL_Texture *tank_blue;
@@ -62,6 +69,7 @@ vector <LinkedList> blueHealthBars = {};
 const static int threadCount = std::thread::hardware_concurrency() * 2;
 mutex mtx;
 
+
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
@@ -77,6 +85,8 @@ void Game::Init() {
     smoke = LOAD_TEX(smoke_img);
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
+
+    Sans = TTF_OpenFont("assets/Roboto-Regular.ttf", 150); //this opens a font style and sets a size
 
 
     //frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
@@ -372,28 +382,6 @@ void Game::Draw() {
     for (Explosion &e : explosions) {
         e.Draw(screen);
     }
-    //Draw sorted health bars
-    /*for (int t = 0; t < 2; t++) {
-        const UINT16 NUM_TANKS = ((t < 1) ? NUM_TANKS_BLUE : NUM_TANKS_RED);
-
-        const UINT16 begin = ((t < 1) ? 0 : NUM_TANKS_BLUE);
-        std::vector<const Tank *> sorted_tanks;
-        insertion_sort_tanks_health(tanks, sorted_tanks, begin, begin + NUM_TANKS);
-
-        for (int i = 0; i < NUM_TANKS; i++) {
-            int health_bar_start_x = i * (HEALTH_BAR_WIDTH + HEALTH_BAR_SPACING) + HEALTH_BARS_OFFSET_X;
-            int health_bar_start_y = (t < 1) ? 0 : (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1;
-            int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
-            int health_bar_end_y = (t < 1) ? HEALTH_BAR_HEIGHT : SCRHEIGHT - 1;
-
-            /*screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
-            screen->Bar(health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT * (1 -
-                                                                                                      ((double) sorted_tanks.at(
-                                                                                                              i)->health /
-                                                                                                       (double) TANK_MAX_HEALTH))),
-                        health_bar_end_x, health_bar_end_y, GREENMASK);
-        }
-    }*/
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
@@ -412,7 +400,7 @@ void Game::DrawTankHP(int i, char color, int health) {
 // Sort tanks by health value using bucket sort
 // -----------------------------------------------------------
 vector<LinkedList> Game::Sort(vector<Tank *> &input, int n_buckets) {
-    vector <LinkedList> buckets(n_buckets);
+    vector<LinkedList> buckets(n_buckets);
     for (auto &tank : input) {
         buckets.at(tank->health / n_buckets).InsertValue(tank->health);
     }
@@ -437,14 +425,37 @@ void PP2::Game::MeasurePerformance() {
     }
 
     if (lock_update) {
+        SDL_Rect r = {420, 170, 450, 260};
+
+        // Set render color to blue ( rect will be rendered in this color )
+        SDL_SetRenderDrawColor(screen, 0, 0, 0, 255);
+
+        // Render rect
+        SDL_RenderFillRect(screen, &r);
         //screen->Bar(420, 170, 870, 430, 0x030000);
+
         int ms = (int) duration % 1000, sec = ((int) duration / 1000) % 60, min = ((int) duration / 60000);
-        sprintf(buffer, "%02i:%02i:%03i", min, sec, ms);
-        cout << buffer << endl;
+        sprintf(buffer, "%02i:%02i:%03i \n SPEEDUP: %4.1f", min, sec, ms, REF_PERFORMANCE / duration);
+        //cout << buffer << endl;
         //frame_count_font->Centre(screen, buffer, 200);
-        sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
-        cout << buffer << endl;
-        //frame_count_font->Centre(screen, buffer, 340);
+
+        // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+        SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Sans, buffer, White);
+        //now you can convert it into a texture
+        SDL_Texture *Message = SDL_CreateTextureFromSurface(screen, surfaceMessage);
+
+
+        SDL_Rect final_message_rect = {420, 170, 450, 25}; //create a rect
+
+        //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
+        //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
+        //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
+        SDL_RenderCopy(screen, Message, NULL, &final_message_rect);
+
+        //Don't forget too free your surface and texture
+        SDL_FreeSurface(surfaceMessage);
+        SDL_DestroyTexture(Message);
+
     }
 }
 
@@ -468,8 +479,21 @@ void Game::Tick(float deltaTime) {
 
     //Print frame count
     frame_count++;
-    /*string frame_count_string = "FRAME: " + std::to_string(frame_count);
-    frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);*/
+    //frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
+    char buffer[15];
+    sprintf(buffer, "FRAME: %lld", frame_count);
+    // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
+    SDL_Surface *surfaceMessage = TTF_RenderText_Solid(Sans, buffer, White);
+    //now you can convert it into a texture
+    SDL_Texture *Message = SDL_CreateTextureFromSurface(screen, surfaceMessage);
+
+    //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
+    //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
+    //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
+    SDL_RenderCopy(screen, Message, NULL, &framecounter_message_rect);
+    //Don't forget too free your surface and texture
+    SDL_FreeSurface(surfaceMessage);
+    SDL_DestroyTexture(Message);
 }
 
 
