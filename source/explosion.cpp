@@ -13,7 +13,7 @@ void PP2::Explosion::Draw(SDL_Renderer *screen) {
     explosion_sprite->Draw(screen, (int) position.x, (int) position.y);*/
     DestR.x = (int) position.x;
     DestR.y = (int) position.y;
-    DestR.w = 24;
-    DestR.h = 24;
+    DestR.w = 32;
+    DestR.h = 32;
     SDL_RenderCopy(screen, explosion_sprite, &SrcR, &DestR);
 }

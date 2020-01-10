@@ -34,13 +34,13 @@ static float duration;
 
 //Load sprite files and initialize sprites
 static SDL_Surface *background_img = SDL_LoadBMP("assets/Background_Grass.bmp");
-static SDL_Surface *tank_red_img = SDL_LoadBMP("assets/ball.bmp");
-static SDL_Surface *tank_blue_img = SDL_LoadBMP("assets/ball.bmp");
-static SDL_Surface *rocket_red_img = SDL_LoadBMP("assets/ball.bmp");
-static SDL_Surface *rocket_blue_img = SDL_LoadBMP("assets/ball.bmp");
-static SDL_Surface *particle_beam_img = SDL_LoadBMP("assets/ball.bmp");
-static SDL_Surface *smoke_img = SDL_LoadBMP("assets/ball.bmp");
-static SDL_Surface *explosion_img = SDL_LoadBMP("assets/ball.bmp");
+static SDL_Surface *tank_red_img = SDL_LoadBMP("assets/Tank_Proj2.bmp");
+static SDL_Surface *tank_blue_img = SDL_LoadBMP("assets/Tank_Blue_Proj2.bmp");
+static SDL_Surface *rocket_red_img = SDL_LoadBMP("assets/Rocket_Proj2.bmp");
+static SDL_Surface *rocket_blue_img = SDL_LoadBMP("assets/Rocket_Blue_Proj2.bmp");
+static SDL_Surface *particle_beam_img = SDL_LoadBMP("assets/Particle_Beam.bmp");
+static SDL_Surface *smoke_img = SDL_LoadBMP("assets/Smoke.bmp");
+static SDL_Surface *explosion_img = SDL_LoadBMP("assets/Explosion.bmp");
 
 TTF_Font *Sans;
 // this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
@@ -365,8 +365,14 @@ void Game::SortHealthBars() {
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    redHealthBars = Sort(redTanks, 100);
-    blueHealthBars = Sort(blueTanks, 100);
+    tbb::task_group g;
+    g.run([&] {
+        redHealthBars = Sort(redTanks, 100);
+    });
+    g.run([&] {
+        blueHealthBars = Sort(blueTanks, 100);
+    });
+    g.wait();
 }
 
 void Game::Draw() {
@@ -431,11 +437,11 @@ void Game::Draw() {
 
     SDL_Rect red = {0, 0, SCRWIDTH, HEALTH_BAR_HEIGHT};
     SDL_Rect blue = {0, (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1, SCRWIDTH, SCRWIDTH - 1};
-    SDL_SetRenderDrawColor(screen, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(screen, 0, 255, 0, 255);
     SDL_RenderFillRect(screen, &red);
     SDL_RenderFillRect(screen, &blue);
 
-    SDL_SetRenderDrawColor(screen, 0, 255, 0, 255);
+    SDL_SetRenderDrawColor(screen, 255, 0, 0, 255);
 
 #ifdef USING_EASY_PROFILER
     EASY_BLOCK("Draw Health_Bar_Red", profiler::colors::Red);
@@ -479,7 +485,7 @@ void Game::Draw() {
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
-    if (health < 0)
+    if (health == TANK_MAX_HEALTH)
         return;
 
     int health_bar_start_x = i * (HEALTH_BAR_WIDTH + HEALTH_BAR_SPACING) + HEALTH_BARS_OFFSET_X;
@@ -487,10 +493,10 @@ void Game::DrawTankHP(int i, char color, int health) {
     int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
     int health_bar_end_y = (color == 'b') ? HEALTH_BAR_HEIGHT : SCRHEIGHT - 1;
 
-    fdiofisdiof.emplace_back(SDL_Point{health_bar_start_x,
-                                       health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT * (1 - ((double) health /
-                                                                                                      (double) TANK_MAX_HEALTH)))});
-    fdiofisdiof.emplace_back(SDL_Point{health_bar_end_x, health_bar_end_y});
+    fdiofisdiof.emplace_back(SDL_Point{health_bar_start_x, health_bar_start_y});
+    fdiofisdiof.emplace_back(
+            SDL_Point{health_bar_end_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT * (1 - ((double) health /
+                                                                                                       (double) TANK_MAX_HEALTH)))});
 
     /*SDL_Rect r = {health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT *
                                                                    (1 - ((double) health / (double) TANK_MAX_HEALTH))),

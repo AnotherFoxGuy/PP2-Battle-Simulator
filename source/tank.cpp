@@ -30,7 +30,7 @@ namespace PP2 {
               smoke_sprite(smoke_sprite) {
         SrcR.x = 0;
         SrcR.y = 0;
-        SrcR.w = 14;
+        SrcR.w = 18;
         SrcR.h = 18;
     }
 
@@ -91,10 +91,10 @@ namespace PP2 {
             (current_frame / 3));
         tank_sprite->Draw(screen, (int)position.x - 14, (int)position.y - 18);*/
 
-        DestR.x = (int) position.x - 14;
-        DestR.y = (int) position.y - 18;
-        DestR.w = 24;
-        DestR.h = 24;
+        DestR.x = (int) position.x - 9;
+        DestR.y = (int) position.y - 9;
+        DestR.w = 18;
+        DestR.h = 18;
 
         SDL_RenderCopy(screen, tank_sprite, &SrcR, &DestR);
     }

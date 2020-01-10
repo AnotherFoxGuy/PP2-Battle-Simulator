@@ -6,15 +6,18 @@ namespace PP2 {
             : min_position(), max_position(), particle_beam_sprite(nullptr), sprite_frame(0), rectangle(), damage(1) {
         SrcR.x = 0;
         SrcR.y = 0;
-        SrcR.w = 14;
-        SrcR.h = 18;
+        SrcR.w = 140;
+        SrcR.h = 200;
     }
 
     Particle_beam::Particle_beam(vec2<> min, vec2<> max, SDL_Texture *particle_beam_sprite, int damage) : particle_beam_sprite(
             particle_beam_sprite), sprite_frame(0), damage(damage) {
         min_position = min;
         max_position = min + max;
-
+        SrcR.x = 0;
+        SrcR.y = 0;
+        SrcR.w = 140;
+        SrcR.h = 200;
         rectangle = Rectangle2D(min_position, max_position);
     }
 
@@ -36,8 +39,8 @@ namespace PP2 {
 
         DestR.x = (int) (position.x - offsetX);
         DestR.y = (int) (position.y - offsetY);
-        DestR.w = 24;
-        DestR.h = 24;
+        DestR.w = 140;
+        DestR.h = 200;
 
         SDL_RenderCopy(screen, particle_beam_sprite, &SrcR, &DestR);
     }

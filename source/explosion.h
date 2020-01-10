@@ -11,8 +11,8 @@ namespace PP2 {
                                                              position(position) {
             SrcR.x = 0;
             SrcR.y = 0;
-            SrcR.w = 14;
-            SrcR.h = 18;
+            SrcR.w = 32;
+            SrcR.h = 32;
         }
 
         bool done() const;

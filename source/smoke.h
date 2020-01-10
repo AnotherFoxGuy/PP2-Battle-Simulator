@@ -10,8 +10,8 @@ namespace PP2 {
         Smoke(SDL_Texture *smoke_sprite, vec2<> position) : current_frame(0), smoke_sprite(smoke_sprite), position(position) {
             SrcR.x = 0;
             SrcR.y = 0;
-            SrcR.w = 14;
-            SrcR.h = 18;
+            SrcR.w = 32;
+            SrcR.h = 32;
         }
 
         void Tick();

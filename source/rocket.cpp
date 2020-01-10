@@ -6,8 +6,8 @@ namespace PP2 {
               current_frame(0), rocket_sprite(rocket_sprite), active(true), id(rand()) {
         SrcR.x = 0;
         SrcR.y = 0;
-        SrcR.w = 14;
-        SrcR.h = 18;
+        SrcR.w = 24;
+        SrcR.h = 24;
     }
 
     Rocket::~Rocket() {

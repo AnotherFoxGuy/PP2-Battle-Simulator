@@ -13,8 +13,8 @@ namespace PP2 {
 
         DestR.x = (int) position.x;
         DestR.y = (int) position.y;
-        DestR.w = 24;
-        DestR.h = 24;
+        DestR.w = 32;
+        DestR.h = 32;
 
         SDL_RenderCopy(screen, smoke_sprite, &SrcR, &DestR);
     }
