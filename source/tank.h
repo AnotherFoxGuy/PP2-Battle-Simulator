@@ -2,65 +2,65 @@
 
 #include "template.h"
 
-namespace PP2 {
+namespace PP2
+{
+enum allignments
+{
+    BLUE,
+    RED
+};
 
-    enum allignments {
-        BLUE,
-        RED
-    };
+class Tank
+{
+public:
+    Tank(float pos_x, float pos_y, allignments allignment, SDL_Texture* tank_sprite, SDL_Texture* smoke_sprite, float tar_x,
+         float tar_y, float collision_radius, int health, float max_speed);
 
-    class Tank {
-    public:
-        Tank(float pos_x, float pos_y, allignments allignment, SDL_Texture *tank_sprite, SDL_Texture *smoke_sprite, float tar_x,
-             float tar_y, float collision_radius, int health, float max_speed);
+    ~Tank();
 
-        ~Tank();
+    void Tick();
 
-        void Tick();
+    vec2<> Get_Position() const { return position; };
 
-        vec2<> Get_Position() const { return position; };
+    float Get_collision_radius() const { return collision_radius; };
 
-        float Get_collision_radius() const { return collision_radius; };
+    bool Rocket_Reloaded() const { return reloaded; };
 
-        bool Rocket_Reloaded() const { return reloaded; };
+    void Reload_Rocket();
 
-        void Reload_Rocket();
+    void Deactivate();
 
-        void Deactivate();
+    bool hit(int hit_value);
 
-        bool hit(int hit_value);
+    void Draw(SDL_Renderer* screen);
 
-        void Draw(SDL_Renderer *screen);
+    int CompareHealth(const Tank& other) const;
 
-        int CompareHealth(const Tank &other) const;
+    void Push(vec2<float> direction, float magnitude);
 
-        void Push(vec2<float> direction, float magnitude);
+    vec2<float> position;
+    vec2<int> gridCell;
+    vec2<float> speed;
+    vec2<float> target;
 
-        vec2<float> position;
-        vec2<int> gridCell;
-        vec2<float> speed;
-        vec2<float> target;
+    int health;
 
-        int health;
+    float collision_radius;
+    vec2<float> force;
 
-        float collision_radius;
-        vec2<float> force;
+    float max_speed;
+    float reload_time;
 
-        float max_speed;
-        float reload_time;
+    bool reloaded;
+    bool active;
 
-        bool reloaded;
-        bool active;
+    allignments allignment;
 
-        allignments allignment;
+    int current_frame;
+    SDL_Texture* tank_sprite;
+    SDL_Texture* smoke_sprite;
 
-        int current_frame;
-        SDL_Texture *tank_sprite;
-        SDL_Texture *smoke_sprite;
-
-        SDL_Rect SrcR;
-        SDL_Rect DestR;
-
-    };
-
+    SDL_Rect SrcR;
+    SDL_Rect DestR;
+};
 } // namespace PP2

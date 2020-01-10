@@ -8,7 +8,7 @@ namespace PP2
 {
 class Grid
 {
-  public:
+public:
     static Grid* Instance();
     ~Grid();
     void AddTankToGridCell(Tank* tank);
@@ -18,14 +18,11 @@ class Grid
 
     std::vector<Tank*> grid[GRID_SIZE_X + 1][GRID_SIZE_Y + 1];
 
-  private:
+private:
     /* Here will be the instance stored. */
     static Grid* instance;
 
     /* Private constructor to prevent instancing. */
     Grid();
-
-
-
 };
 } // namespace PP2

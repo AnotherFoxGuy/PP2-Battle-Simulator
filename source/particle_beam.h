@@ -4,29 +4,31 @@
 #include "surface.h"
 #include "tank.h"
 
-namespace PP2 {
-    class Particle_beam {
-    public:
-        Particle_beam();
+namespace PP2
+{
+class Particle_beam
+{
+public:
+    Particle_beam();
 
-        Particle_beam(vec2<> min, vec2<> max, SDL_Texture *particle_beam_sprite, int damage);
+    Particle_beam(vec2<> min, vec2<> max, SDL_Texture* particle_beam_sprite, int damage);
 
-        void tick();
+    void tick();
 
-        void Draw(SDL_Renderer *screen);
+    void Draw(SDL_Renderer* screen);
 
-        vec2<> min_position;
-        vec2<> max_position;
+    vec2<> min_position;
+    vec2<> max_position;
 
-        Rectangle2D rectangle;
+    Rectangle2D rectangle;
 
-        int sprite_frame;
+    int sprite_frame;
 
-        int damage;
+    int damage;
 
-        SDL_Texture *particle_beam_sprite;
+    SDL_Texture* particle_beam_sprite;
 
-        SDL_Rect SrcR;
-        SDL_Rect DestR;
-    };
+    SDL_Rect SrcR;
+    SDL_Rect DestR;
+};
 } // namespace PP2
