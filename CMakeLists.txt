@@ -19,9 +19,12 @@ if (USE_PACKAGE_MANAGER)
             CMakeCM ROLLING
             )
 else ()
-    find_package(SDL2 REQUIRED)
-    find_package(FreeImage REQUIRED)
     find_package(TBB REQUIRED)
+    find_package(PkgConfig REQUIRED)
+
+    pkg_check_modules(SDL2 REQUIRED sdl2)
+    pkg_check_modules(SDL2_image REQUIRED SDL2_image)
+    pkg_check_modules(SDL2_ttf REQUIRED SDL2_ttf)
 endif ()
 
 find_package(OpenGL REQUIRED)
