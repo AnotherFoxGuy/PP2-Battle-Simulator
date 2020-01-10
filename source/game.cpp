@@ -26,7 +26,7 @@ using namespace PP2;
 
 #include <easy/profiler.h>
 
-#define PROFILE_PARALLEL 1
+#define PROFILE_PARALLEL 0
 #endif
 
 static timer perf_timer;
@@ -50,6 +50,7 @@ SDL_Surface *text_surface;
 SDL_Texture *text_texture;
 
 SDL_Texture *background;
+SDL_Texture *tankthreads;
 SDL_Texture *tank_red;
 SDL_Texture *tank_blue;
 SDL_Texture *rocket_red;
@@ -81,6 +82,12 @@ void Game::Init() {
     //initiate grid to allocate memory
     auto instance = Grid::Instance();
 
+    tankthreads = SDL_CreateTexture(screen, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCRWIDTH, SCRHEIGHT);
+
+
+
+    //SDL_SetTextureBlendMode(tankthreads, SDL_BLENDMODE_BLEND);
+
     background = LOAD_TEX(background_img);
     tank_red = LOAD_TEX(tank_red_img);
     tank_blue = LOAD_TEX(tank_blue_img);
@@ -92,6 +99,12 @@ void Game::Init() {
 
     Sans = TTF_OpenFont("assets/Roboto-Regular.ttf", 10); //this opens a font style and sets a size
 
+    Uint32 *pixels = nullptr;
+    int pitch = 0;
+    // Now let's make our "pixels" pointer point to the texture data.
+    SDL_LockTexture(tankthreads, nullptr, (void **) &pixels, &pitch);
+    memcpy(pixels, background_img->pixels, SCRWIDTH * SCRHEIGHT * 4);
+    SDL_UnlockTexture(tankthreads);
 
     //frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
 
@@ -216,7 +229,7 @@ void Game::UpdateTanks() {
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, tanks.size()),
+    tbb::parallel_for(tbb::blocked_range<int>(0, tanks.size()),
                       [&](tbb::blocked_range<int> r) {
 #if PROFILE_PARALLEL == 1
                           EASY_BLOCK("Update Tank", profiler::colors::Gold);
@@ -291,7 +304,7 @@ void Game::UpdateRockets() {
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
-    tbb::parallel_for(tbb::blocked_range<int>(1, rockets.size()),
+    tbb::parallel_for(tbb::blocked_range<int>(0, rockets.size()),
                       [&](tbb::blocked_range<int> r) {
 #if PROFILE_PARALLEL == 1
                           EASY_BLOCK("Update Rocket", profiler::colors::Gold);
@@ -360,8 +373,18 @@ void Game::Draw() {
 #ifdef USING_EASY_PROFILER
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
+
     //Draw background
-    SDL_RenderCopy(screen, background, NULL, NULL);
+    //SDL_RenderCopy(screen, background, NULL, NULL);
+    SDL_RenderCopy(screen, tankthreads, NULL, NULL);
+
+#ifdef USING_EASY_PROFILER
+    EASY_BLOCK("Draw tanks", profiler::colors::Red);
+#endif
+    Uint32 *pixels = nullptr;
+    int pitch = 0;
+    // Now let's make our "pixels" pointer point to the texture data.
+    SDL_LockTexture(tankthreads, nullptr, (void **) &pixels, &pitch);
 
     //Draw sprites
     for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++) {
@@ -369,10 +392,26 @@ void Game::Draw() {
 
         vec2 tPos = tanks.at(i).Get_Position();
         // tread marks
+        if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT)) {
+            // Before setting the color, we need to know where we have to place it.
+            Uint32 pixelPosition = (int) tPos.y * (pitch / sizeof(unsigned int)) + (int) tPos.x;
+            // Now we can set the pixel(s) we want.
+            pixels[pixelPosition] *= 0x808080;//Black;
+
+        }
         /*if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
             background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
                     background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);*/
     }
+
+    // Also don't forget to unlock your texture once you're done.
+
+#ifdef USING_EASY_PROFILER
+    EASY_END_BLOCK
+#endif
+    //SDL_SetRenderDrawBlendMode(screen, SDL_BLENDMODE_BLEND);
+
+    //SDL_SetRenderDrawBlendMode(screen, SDL_BLENDMODE_NONE);
 
     for (Rocket &r : rockets) {
         r.Draw(screen);
@@ -436,6 +475,7 @@ void Game::Draw() {
 #ifdef USING_EASY_PROFILER
     EASY_END_BLOCK
 #endif
+
 }
 
 void Game::DrawTankHP(int i, char color, int health) {
@@ -537,7 +577,14 @@ void PP2::Game::MeasurePerformance() {
 // Main application tick function
 // -----------------------------------------------------------
 void Game::Tick(float deltaTime) {
+    tbb::task_group g;
     if (!lock_update) {
+        g.run([&] {
+#ifdef USING_EASY_PROFILER
+            EASY_BLOCK("SDL_UnlockTexture", profiler::colors::Orange);
+#endif
+            SDL_UnlockTexture(tankthreads);
+        });
         Update(deltaTime);
     }
 
@@ -569,6 +616,7 @@ void Game::Tick(float deltaTime) {
         //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
         SDL_RenderCopy(screen, text_texture, NULL, &framecounter_message_rect);
         //Don't forget too free your surface and texture
+        g.wait();
     }
 }
 
