@@ -1,6 +1,9 @@
 #include "tank.h"
 #include "Grid.h"
 
+#define T_SIZE_X 14
+#define T_SIZE_Y 18
+
 namespace PP2 {
     Tank::Tank(
             float pos_x,
@@ -28,10 +31,8 @@ namespace PP2 {
               current_frame(0),
               tank_sprite(tank_sprite),
               smoke_sprite(smoke_sprite) {
-        SrcR.x = 0;
-        SrcR.y = 0;
-        SrcR.w = 18;
-        SrcR.h = 18;
+        SrcR = {0, 0, T_SIZE_X, T_SIZE_Y};
+        DestR = {0, 0, T_SIZE_X, T_SIZE_Y};
     }
 
     Tank::~Tank() {
@@ -90,11 +91,12 @@ namespace PP2 {
             ((abs(direction.x) > abs(direction.y)) ? ((direction.x < 0) ? 3 : 0) : ((direction.y < 0) ? 9 : 6)) +
             (current_frame / 3));
         tank_sprite->Draw(screen, (int)position.x - 14, (int)position.y - 18);*/
-
         DestR.x = (int) position.x - 9;
         DestR.y = (int) position.y - 9;
-        DestR.w = 18;
-        DestR.h = 18;
+
+        int frame = ((abs(direction.x) > abs(direction.y)) ? ((direction.x < 0) ? 3 : 0) : ((direction.y < 0) ? 9 : 6)) +
+                         (current_frame / 3);
+        SrcR.x = frame * T_SIZE_X;
 
         SDL_RenderCopy(screen, tank_sprite, &SrcR, &DestR);
     }

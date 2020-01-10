@@ -49,6 +49,11 @@ if (MSVC)
             PROPERTY
             VS_STARTUP_PROJECT ${PROJECT_NAME}
     )
+    set_target_properties(
+            ${PROJECT_NAME}
+            PROPERTIES
+            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    )
 endif ()
 
 if (ENABLE_EASY_PROFILER)
@@ -58,7 +63,7 @@ endif ()
 
 add_custom_target(
         copy_resources
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets/
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets/ ${CMAKE_BINARY_DIR}/assets/
         COMMENT "Copy the resources to the compiled directory"
         VERBATIM
 )

@@ -393,22 +393,24 @@ void Game::Draw() {
     SDL_LockTexture(tankthreads, nullptr, (void **) &pixels, &pitch);
 
     //Draw sprites
-    for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++) {
+    for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++)
+    {
         tanks.at(i).Draw(screen);
 
         vec2 tPos = tanks.at(i).Get_Position();
         // tread marks
-        if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT)) {
+        if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
+        {
             // Before setting the color, we need to know where we have to place it.
-            Uint32 pixelPosition = (int) tPos.y * (pitch / sizeof(unsigned int)) + (int) tPos.x;
+            Uint32 pixelPosition = (int)tPos.y * (pitch / sizeof(unsigned int)) + (int)tPos.x;
             // Now we can set the pixel(s) we want.
-            pixels[pixelPosition] *= 0x808080;//Black;
-
+            pixels[pixelPosition] *= 0x808080; //Black;
         }
         /*if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
-            background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
-                    background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);*/
+        background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
+                background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);*/
     }
+
 
     // Also don't forget to unlock your texture once you're done.
 
@@ -458,6 +460,7 @@ void Game::Draw() {
         }
     }
 
+    if (fdiofisdiof.size() > 0)
     SDL_RenderDrawLines(screen, &fdiofisdiof[0], fdiofisdiof.size());
     fdiofisdiof.clear();
 
@@ -475,7 +478,7 @@ void Game::Draw() {
             countBlue++;
         }
     }
-
+    if (fdiofisdiof.size() > 0)
     SDL_RenderDrawLines(screen, &fdiofisdiof[0], fdiofisdiof.size());
     fdiofisdiof.clear();
 #ifdef USING_EASY_PROFILER
@@ -560,7 +563,7 @@ void PP2::Game::MeasurePerformance() {
         //frame_count_font->Centre(screen, buffer, 200);
 
         // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-        text_surface = TTF_RenderText_Solid(Sans, buffer, White);
+        text_surface = TTF_RenderUTF8_Solid(Sans, buffer, White);
         //now you can convert it into a texture
         text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
 
@@ -593,6 +596,10 @@ void Game::Tick(float deltaTime) {
         });
         Update(deltaTime);
     }
+    else
+    {
+        SDL_UnlockTexture(tankthreads);
+    } 
 
     Draw();
 

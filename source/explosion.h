@@ -7,13 +7,7 @@ namespace PP2 {
 
     class Explosion {
     public:
-        Explosion(SDL_Texture *explosion_sprite, vec2<> position) : current_frame(0), explosion_sprite(explosion_sprite),
-                                                             position(position) {
-            SrcR.x = 0;
-            SrcR.y = 0;
-            SrcR.w = 32;
-            SrcR.h = 32;
-        }
+        Explosion(SDL_Texture* explosion_sprite, vec2<> position); 
 
         bool done() const;
 
