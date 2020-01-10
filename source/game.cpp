@@ -42,8 +42,8 @@ static SDL_Surface* particle_beam_img = SDL_LoadBMP("assets/Particle_Beam.bmp");
 static SDL_Surface* smoke_img = SDL_LoadBMP("assets/Smoke.bmp");
 static SDL_Surface* explosion_img = SDL_LoadBMP("assets/Explosion.bmp");
 
-TTF_Font* Sans;
-// this is the color in rgb format, maxing out all would give you the color white, and it will be your text's color
+TTF_Font* FPS;
+TTF_Font* End;
 static SDL_Color White = {255, 255, 255};
 static SDL_Rect framecounter_message_rect = {50, 50, 500, 100}; //create a rect
 SDL_Surface* text_surface;
@@ -71,7 +71,6 @@ vector<SDL_Point> fdiofisdiof = {};
 
 #define LOAD_TEX(_FIELD_) SDL_CreateTextureFromSurface(screen, _FIELD_);
 
-const static int threadCount = std::thread::hardware_concurrency() * 2;
 mutex mtx;
 
 
@@ -85,8 +84,6 @@ void Game::Init()
 
     tankthreads = SDL_CreateTexture(screen, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCRWIDTH, SCRHEIGHT);
 
-    //SDL_SetTextureBlendMode(tankthreads, SDL_BLENDMODE_BLEND);
-
     background = LOAD_TEX(background_img);
     tank_red = LOAD_TEX(tank_red_img);
     tank_blue = LOAD_TEX(tank_blue_img);
@@ -96,7 +93,8 @@ void Game::Init()
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
 
-    Sans = TTF_OpenFont("assets/Roboto-Regular.ttf", 10); //this opens a font style and sets a size
+    FPS = TTF_OpenFont("assets/digital-7.ttf", 32); //this opens a font style and sets a size
+    End = TTF_OpenFont("assets/digital-7.ttf", 250); //this opens a font style and sets a size
 
     Uint32* pixels = nullptr;
     int pitch = 0;
@@ -104,8 +102,6 @@ void Game::Init()
     SDL_LockTexture(tankthreads, nullptr, (void**)&pixels, &pitch);
     memcpy(pixels, background_img->pixels, SCRWIDTH * SCRHEIGHT * 4);
     SDL_UnlockTexture(tankthreads);
-
-    //frame_count_font = new Font("assets/digital_small.png", "ABCDEFGHIJKLMNOPQRSTUVWXYZ:?!=-0123456789.");
 
     tanks.reserve(NUM_TANKS_BLUE + NUM_TANKS_RED);
     blueTanks.reserve(NUM_TANKS_BLUE);
@@ -392,33 +388,31 @@ void Game::Draw()
     // Now let's make our "pixels" pointer point to the texture data.
     SDL_LockTexture(tankthreads, nullptr, (void**)&pixels, &pitch);
 
-    //Draw sprites
-    for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++)
+    try
     {
-        tanks.at(i).Draw(screen);
-
-        vec2 tPos = tanks.at(i).Get_Position();
-        // tread marks
-        if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
+        //Draw sprites
+        for (int i = 0; i < NUM_TANKS_BLUE + NUM_TANKS_RED; i++)
         {
-            // Before setting the color, we need to know where we have to place it.
-            Uint32 pixelPosition = (int)tPos.y * (pitch / sizeof(unsigned int)) + (int)tPos.x;
-            // Now we can set the pixel(s) we want.
-            pixels[pixelPosition] *= 0x808080; //Black;
+            tanks.at(i).Draw(screen);
+
+            vec2 tPos = tanks.at(i).Get_Position();
+            // tread marks
+            if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
+            {
+                // Before setting the color, we need to know where we have to place it.
+                Uint32 pixelPosition = (int)tPos.y * (pitch / sizeof(unsigned int)) + (int)tPos.x;
+                // Now we can set the pixel(s) we want.
+                pixels[pixelPosition] *= 0x808080; //Black;
+            }
         }
-        /*if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
-        background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH] = SubBlend(
-                background.GetBuffer()[(int) tPos.x + (int) tPos.y * SCRWIDTH], 0x808080);*/
     }
+    catch (...) {}
 
     // Also don't forget to unlock your texture once you're done.
 
 #ifdef USING_EASY_PROFILER
     EASY_END_BLOCK
 #endif
-    //SDL_SetRenderDrawBlendMode(screen, SDL_BLENDMODE_BLEND);
-
-    //SDL_SetRenderDrawBlendMode(screen, SDL_BLENDMODE_NONE);
 
     for (Rocket& r : rockets) { r.Draw(screen); }
 
@@ -492,22 +486,6 @@ void Game::DrawTankHP(int i, char color, int health)
     fdiofisdiof.emplace_back(
         SDL_Point{health_bar_end_x, health_bar_start_y + (int)((double)HEALTH_BAR_HEIGHT * (1 - ((double)health /
                                                                                                  (double)TANK_MAX_HEALTH)))});
-
-    /*SDL_Rect r = {health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT *
-                                                                   (1 - ((double) health / (double) TANK_MAX_HEALTH))),
-                   health_bar_end_x, health_bar_end_y};
-    SDL_RenderFillRect(screen, &r);*/
-
-    /*SDL_RenderDrawLine(screen, health_bar_start_x,
-                       health_bar_start_y +
-                       (int) ((double) HEALTH_BAR_HEIGHT * (1 - ((double) health / (double) TANK_MAX_HEALTH))),
-                       health_bar_end_x,
-                       health_bar_end_y);*/
-
-    /*screen->Bar(health_bar_start_x, health_bar_start_y, health_bar_end_x, health_bar_end_y, REDMASK);
-    screen->Bar(health_bar_start_x, health_bar_start_y + (int) ((double) HEALTH_BAR_HEIGHT *
-                                                                (1 - ((double) health / (double) TANK_MAX_HEALTH))),
-                health_bar_end_x, health_bar_end_y, GREENMASK);*/
 }
 
 // -----------------------------------------------------------
@@ -543,35 +521,23 @@ void PP2::Game::MeasurePerformance()
     if (lock_update)
     {
         SDL_Rect r = {420, 170, 450, 260};
+        SDL_Rect final_message_rect = {500, 210, 300, 60}; //create a rect
 
-        // Set render color to blue ( rect will be rendered in this color )
         SDL_SetRenderDrawColor(screen, 0, 0, 0, 255);
-
-        // Render rect
         SDL_RenderFillRect(screen, &r);
-        //screen->Bar(420, 170, 870, 430, 0x030000);
 
         int ms = (int)duration % 1000, sec = ((int)duration / 1000) % 60, min = ((int)duration / 60000);
-        sprintf(buffer, "%02i:%02i:%03i \n SPEEDUP: %4.1f", min, sec, ms, REF_PERFORMANCE / duration);
-        //cout << buffer << endl;
-        //frame_count_font->Centre(screen, buffer, 200);
-
-        // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-        text_surface = TTF_RenderUTF8_Solid(Sans, buffer, White);
-        //now you can convert it into a texture
+        sprintf(buffer, " %02i:%02i:%03i ", min, sec, ms);
+        text_surface = TTF_RenderText_Solid(End, buffer, White);
         text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
-
-        //SDL_BlitSurface(surfaceMessage,NULL,text_surface,NULL);
-        SDL_Rect final_message_rect = {420, 170, 450, 25}; //create a rect
-
-        //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
-        //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
-        //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
         SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
 
-        //Don't forget too free your surface and texture
-        //SDL_FreeSurface(surfaceMessage);
-        //SDL_DestroyTexture(Message);
+        final_message_rect.y = 300;
+
+        sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
+        text_surface = TTF_RenderText_Solid(End, buffer, White);
+        text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
+        SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
     }
 }
 
@@ -598,11 +564,6 @@ void Game::Tick(float deltaTime)
 
     MeasurePerformance();
 
-    // print something in the graphics window
-    //screen->Print("hello world", 2, 2, 0xffffff);
-
-    // print something to the text window
-    //cout << "This goes to the console window." << std::endl;
 #if PROFILE_PARALLEL == 1
     EASY_BLOCK("Print frame count", profiler::colors::Gold);
 #endif
@@ -610,19 +571,12 @@ void Game::Tick(float deltaTime)
     {
         //Print frame count
         frame_count++;
-        //frame_count_font->Print(screen, frame_count_string.c_str(), 350, 580);
         char buffer[15];
         sprintf(buffer, "FRAME: %lld", frame_count);
-        // as TTF_RenderText_Solid could only be used on SDL_Surface then you have to create the surface first
-        text_surface = TTF_RenderText_Solid(Sans, buffer, White);
-        //now you can convert it into a texture
+        text_surface = TTF_RenderText_Solid(FPS, buffer, White);
         text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
 
-        //Mind you that (0,0) is on the top left of the window/screen, think a rect as the text's box, that way it would be very simple to understance
-        //Now since it's a texture, you have to put RenderCopy in your game loop area, the area where the whole code executes
-        //you put the renderer's name first, the Message, the crop size(you can ignore this if you don't want to dabble with cropping), and the rect which is the size and coordinate of your texture
         SDL_RenderCopy(screen, text_texture, NULL, &framecounter_message_rect);
-        //Don't forget too free your surface and texture
         g.wait();
     }
 }
