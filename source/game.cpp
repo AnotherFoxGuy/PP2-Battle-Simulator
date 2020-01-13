@@ -532,12 +532,18 @@ void PP2::Game::MeasurePerformance()
         text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
         SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
 
+        SDL_FreeSurface(text_surface);
+        SDL_DestroyTexture(text_texture);
+
         final_message_rect.y = 300;
 
         sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
         text_surface = TTF_RenderText_Solid(End, buffer, White);
         text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
         SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
+
+        SDL_FreeSurface(text_surface);
+        SDL_DestroyTexture(text_texture);
     }
 }
 

@@ -73,13 +73,6 @@ ELSEIF (UNIX)
 endif (WIN32)
 
 
-if (ENABLE_MICROPROFILE)
-    include(FetchContent)
-    FetchContent_Declare(microprofile
-            GIT_REPOSITORY https://github.com/jonasmr/microprofile.git)
-    FetchContent_MakeAvailable(microprofile)
-endif (ENABLE_MICROPROFILE)
-
 add_subdirectory(source)
 
 feature_summary(WHAT ALL)
