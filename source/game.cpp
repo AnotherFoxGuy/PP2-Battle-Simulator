@@ -47,7 +47,6 @@ static SDL_Rect framecounter_message_rect = {50, 50, 500, 100}; //create a rect
 SDL_Surface* text_surface;
 SDL_Texture* text_texture;
 
-SDL_Texture* background;
 SDL_Texture* tankthreads;
 SDL_Texture* tank_red;
 SDL_Texture* tank_blue;
@@ -71,6 +70,12 @@ vector<SDL_Point> fdiofisdiof = {};
 
 mutex mtx;
 
+SDL_Rect end_message_rectl1 = {500, 210, 300, 60};
+SDL_Rect end_message_rectl2 = {500, 300, 300, 60};
+
+SDL_Texture* end_message_texturel1;
+SDL_Texture* end_message_texturel2;
+
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -81,8 +86,7 @@ void Game::Init()
     auto instance = Grid::Instance();
 
     tankthreads = SDL_CreateTexture(screen, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCRWIDTH, SCRHEIGHT);
-
-    background = LOAD_TEX(background_img);
+    
     tank_red = LOAD_TEX(tank_red_img);
     tank_blue = LOAD_TEX(tank_blue_img);
     rocket_red = LOAD_TEX(rocket_red_img);
@@ -507,9 +511,20 @@ void PP2::Game::MeasurePerformance()
     {
         if (!lock_update)
         {
+            lock_update = true;
             duration = perf_timer.elapsed();
             cout << "Duration was: " << duration << " (Replace REF_PERFORMANCE with this value)" << endl;
-            lock_update = true;
+
+            int ms = (int)duration % 1000, sec = ((int)duration / 1000) % 60, min = ((int)duration / 60000);
+            sprintf(buffer, " %02i:%02i:%03i ", min, sec, ms);
+            text_surface = TTF_RenderText_Solid(End, buffer, White);
+            end_message_texturel1 = SDL_CreateTextureFromSurface(screen, text_surface);
+
+            sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
+            text_surface = TTF_RenderText_Solid(End, buffer, White);
+            end_message_texturel2 = SDL_CreateTextureFromSurface(screen, text_surface);
+
+            SDL_FreeSurface(text_surface);
         }
 
         frame_count--;
@@ -518,29 +533,10 @@ void PP2::Game::MeasurePerformance()
     if (lock_update)
     {
         SDL_Rect r = {420, 170, 450, 260};
-        SDL_Rect final_message_rect = {500, 210, 300, 60}; //create a rect
-
         SDL_SetRenderDrawColor(screen, 0, 0, 0, 255);
         SDL_RenderFillRect(screen, &r);
-
-        int ms = (int)duration % 1000, sec = ((int)duration / 1000) % 60, min = ((int)duration / 60000);
-        sprintf(buffer, " %02i:%02i:%03i ", min, sec, ms);
-        text_surface = TTF_RenderText_Solid(End, buffer, White);
-        text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
-        SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
-
-        SDL_FreeSurface(text_surface);
-        SDL_DestroyTexture(text_texture);
-
-        final_message_rect.y = 300;
-
-        sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
-        text_surface = TTF_RenderText_Solid(End, buffer, White);
-        text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
-        SDL_RenderCopy(screen, text_texture, NULL, &final_message_rect);
-
-        SDL_FreeSurface(text_surface);
-        SDL_DestroyTexture(text_texture);
+        SDL_RenderCopy(screen, end_message_texturel1, NULL, &end_message_rectl1);
+        SDL_RenderCopy(screen, end_message_texturel2, NULL, &end_message_rectl2);
     }
 }
 
