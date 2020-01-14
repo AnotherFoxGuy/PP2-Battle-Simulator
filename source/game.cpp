@@ -1,18 +1,16 @@
 using namespace std;
 
-#include "surface.h"
 #include "template.h"
-#include <cstdio>
 #include <iostream>
 #include <string>
 #include <SDL2/SDL.h>
 #include <tbb/parallel_for.h>
 #include <tbb/task_group.h>
 #include <SDL2/SDL_ttf.h>
+#include <mutex>
 
 using namespace PP2;
 
-#include "ThreadPool.h"
 #include "Grid.h"
 #include "explosion.h"
 #include "particle_beam.h"
@@ -283,7 +281,6 @@ void Game::UpdateTanks()
                                                    rocket_radius,
                                                    tank.allignment,
                                                    ((tank.allignment == RED) ? rocket_red : rocket_blue));
-
                               tank.Reload_Rocket();
                           }
                       });

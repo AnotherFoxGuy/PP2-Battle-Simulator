@@ -12,15 +12,6 @@
 
 namespace PP2
 {
-//forward declarations
-class Tank;
-
-class Rocket;
-
-class Smoke;
-
-class Particle_beam;
-
 class Node
 {
 public:

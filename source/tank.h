@@ -1,15 +1,10 @@
 #pragma once
 
+#include <SDL2/SDL_render.h>
 #include "template.h"
 
 namespace PP2
 {
-enum allignments
-{
-    BLUE,
-    RED
-};
-
 class Tank
 {
 public:

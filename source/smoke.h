@@ -1,6 +1,6 @@
 #pragma once
 
-#include "surface.h"
+#include <SDL2/SDL_render.h>
 #include "template.h"
 
 namespace PP2

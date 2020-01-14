@@ -5,14 +5,16 @@
 
 #define TEMPLATE_VERSION "Template_v2019.01"
 
+#include <cinttypes>
 #include <chrono>
 #include <cstdint>
 #include <algorithm>
-#include <math.h>
+#include <cmath>
 #include <cstring>
 
 #include <pmmintrin.h>
 #include <immintrin.h>
+
 
 typedef unsigned char uchar;
 typedef unsigned char byte;
@@ -50,6 +52,8 @@ typedef unsigned int uint;
 #define unlikely(expr) __builtin_expect((expr), false)
 #endif
 
+
+
 // deterministic rng
 static uint seed = 0x12345678;
 
@@ -65,30 +69,38 @@ inline float RandomFloat() { return RandomUInt() * 2.3283064365387e-10f; }
 
 inline float Rand(float range) { return RandomFloat() * range; }
 
+enum allignments
+{
+    BLUE,
+    RED
+};
+
 namespace PP2
 {
-struct timer
+class timer
 {
     typedef std::chrono::high_resolution_clock Clock;
     typedef Clock::time_point TimePoint;
     typedef std::chrono::microseconds MicroSeconds;
 
+public:
+
     TimePoint start;
 
-    inline timer()
+    timer()
         : start(get()) {}
 
     /// Returns the elapsed time, in milliseconds.
-    inline float elapsed() const
+    float elapsed() const
     {
         auto diff = get() - start;
         auto duration_us = std::chrono::duration_cast<MicroSeconds>(diff);
         return static_cast<float>(duration_us.count()) / 1000.0f;
     }
 
-    static inline TimePoint get() { return Clock::now(); }
+    static TimePoint get() { return Clock::now(); }
 
-    inline void reset() { start = get(); }
+    void reset() { start = get(); }
 };
 
 // vectors

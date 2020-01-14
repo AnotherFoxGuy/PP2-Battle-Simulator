@@ -1,8 +1,8 @@
 #pragma once
 
 #include <vector>
-#include "surface.h"
-#include "tank.h"
+#include <SDL2/SDL_render.h>
+#include "template.h"
 
 namespace PP2
 {

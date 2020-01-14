@@ -14,11 +14,9 @@
 #include "template.h"
 #include "defines.h"
 #include "game.h"
-#include "surface.h"
 #include <SDL2/SDL.h>
 #include <iostream>
-#include <stdint.h>
-#include <tbb/task_group.h>
+#include <SDL2/SDL_ttf.h>
 
 #ifdef USING_EASY_PROFILER
 
