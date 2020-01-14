@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Grid.h"
+#include "Algorithms.h"
 #include "defines.h"
 #include "explosion.h"
 #include "particle_beam.h"
@@ -12,57 +13,6 @@
 
 namespace PP2
 {
-class Node
-{
-public:
-
-    Node()
-        : value(0), next(nullptr) {}
-
-    Node(int value)
-        : value(value), next(nullptr) {}
-
-    int value;
-    Node* next;
-};
-
-class LinkedList
-{
-public:
-    LinkedList()
-        : head(nullptr) {}
-
-    void InsertValue(int value)
-    {
-        Node* new_node = new Node(value);
-
-        if (head == nullptr || value <= head->value)
-        {
-            new_node->next = head;
-            head = new_node;
-            return;
-        }
-
-        Node* current = head;
-        while (current->next != nullptr && value >= current->next->value) { current = current->next; }
-
-        //Add node
-        new_node->next = current->next;
-        current->next = new_node;
-    }
-
-    void PrintList()
-    {
-        Node* current = head;
-        while (current != nullptr)
-        {
-            std::cout << current->value << ", ";
-            current = current->next;
-        }
-    }
-
-    Node* head;
-};
 
 class Game
 {
@@ -82,8 +32,6 @@ public:
     void MeasurePerformance();
 
     Tank& FindClosestEnemy(Tank& current_tank);
-
-    std::vector<LinkedList> Sort(std::vector<Tank*>& input, int n_buckets);
 
     void DrawTankHP(int i, char color, int health);
 
@@ -138,6 +86,8 @@ private:
     void UpdateExplosions();
 
     void SortHealthBars();
+
+    std::vector<LinkedList> Sort(std::vector<Tank*>& input, int n_buckets);
 
     ~Game();
 };

@@ -1,5 +1,6 @@
 #include "tank.h"
 #include "Grid.h"
+#include <SDL.h>
 
 #define T_SIZE_X 14
 #define T_SIZE_Y 18

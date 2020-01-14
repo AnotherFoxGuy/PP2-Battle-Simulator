@@ -12,6 +12,7 @@ set(SOURCE_FILES
         particle_beam.{h,cpp}
         rocket.{h,cpp}
         smoke.{h,cpp}
+        Algorithms.{h,cpp}
         tank.{h,cpp}
         template.{h,cpp}
         defines.h

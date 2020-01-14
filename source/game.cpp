@@ -11,6 +11,7 @@ using namespace std;
 
 using namespace PP2;
 
+#include "Algorithms.h"
 #include "Grid.h"
 #include "explosion.h"
 #include "particle_beam.h"
@@ -24,7 +25,7 @@ using namespace PP2;
 
 #include <easy/profiler.h>
 
-#define PROFILE_PARALLEL 0
+#define PROFILE_PARALLEL 1
 #endif
 
 static timer perf_timer;
@@ -43,7 +44,7 @@ static SDL_Surface* explosion_img = SDL_LoadBMP("assets/Explosion.bmp");
 TTF_Font* FPS;
 TTF_Font* End;
 static SDL_Color White = {255, 255, 255};
-static SDL_Rect framecounter_message_rect = {50, 50, 500, 100}; //create a rect
+static SDL_Rect framecounter_message_rect = {5, 5, 100, 50}; //create a rect
 SDL_Surface* text_surface;
 SDL_Texture* text_texture;
 
@@ -64,7 +65,7 @@ const static float rocket_radius = 10.f;
 
 vector<LinkedList> redHealthBars = {};
 vector<LinkedList> blueHealthBars = {};
-vector<SDL_Point> fdiofisdiof = {};
+vector<SDL_Point> drawPoints = {};
 
 #define LOAD_TEX(_FIELD_) SDL_CreateTextureFromSurface(screen, _FIELD_);
 
@@ -95,7 +96,7 @@ void Game::Init()
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
 
-    FPS = TTF_OpenFont("assets/digital-7.ttf", 32); //this opens a font style and sets a size
+    FPS = TTF_OpenFont("assets/digital-7.ttf", 50); //this opens a font style and sets a size
     End = TTF_OpenFont("assets/digital-7.ttf", 250); //this opens a font style and sets a size
 
     Uint32* pixels = nullptr;
@@ -167,7 +168,7 @@ Game::~Game()
 Tank& Game::FindClosestEnemy(Tank& current_tank)
 {
 #if PROFILE_PARALLEL == 1
-    EASY_FUNCTION(profiler::colors::Orange);
+    EASY_FUNCTION(profiler::colors::Purple);
 #endif
     float closest_distance = numeric_limits<float>::infinity();
     int closest_index = 0;
@@ -448,8 +449,8 @@ void Game::Draw()
         }
     }
 
-    if (fdiofisdiof.size() > 0) SDL_RenderDrawLines(screen, &fdiofisdiof[0], fdiofisdiof.size());
-    fdiofisdiof.clear();
+    if (drawPoints.size() > 0) SDL_RenderDrawLines(screen, &drawPoints[0], drawPoints.size());
+    drawPoints.clear();
 
 #ifdef USING_EASY_PROFILER
     EASY_END_BLOCK
@@ -467,8 +468,8 @@ void Game::Draw()
             countBlue++;
         }
     }
-    if (fdiofisdiof.size() > 0) SDL_RenderDrawLines(screen, &fdiofisdiof[0], fdiofisdiof.size());
-    fdiofisdiof.clear();
+    if (drawPoints.size() > 0) SDL_RenderDrawLines(screen, &drawPoints[0], drawPoints.size());
+    drawPoints.clear();
 #ifdef USING_EASY_PROFILER
     EASY_END_BLOCK
 #endif
@@ -483,8 +484,8 @@ void Game::DrawTankHP(int i, char color, int health)
     int health_bar_end_x = health_bar_start_x + HEALTH_BAR_WIDTH;
     int health_bar_end_y = (color == 'b') ? HEALTH_BAR_HEIGHT : SCRHEIGHT - 1;
 
-    fdiofisdiof.emplace_back(SDL_Point{health_bar_start_x, health_bar_start_y});
-    fdiofisdiof.emplace_back(
+    drawPoints.emplace_back(SDL_Point{health_bar_start_x, health_bar_start_y});
+    drawPoints.emplace_back(
         SDL_Point{health_bar_end_x, health_bar_start_y + (int)((double)HEALTH_BAR_HEIGHT * (1 - ((double)health /
                                                                                                  (double)TANK_MAX_HEALTH)))});
 }
@@ -570,8 +571,8 @@ void Game::Tick(float deltaTime)
     {
         //Print frame count
         frame_count++;
-        char buffer[15];
-        sprintf(buffer, "FRAME: %lld", frame_count);
+        char buffer[6];
+        sprintf(buffer, "%lld", frame_count);
         text_surface = TTF_RenderText_Solid(FPS, buffer, White);
         text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
 
