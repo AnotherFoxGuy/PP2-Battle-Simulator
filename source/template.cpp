@@ -165,6 +165,7 @@ int main(int argc, char** argv)
     int exitapp = 0;
     game = new Game();
     game->SetTarget(renderer);
+    game->Init();
     timer t;
     t.reset();
     while (!exitapp)
@@ -172,11 +173,6 @@ int main(int argc, char** argv)
 #ifdef USING_EASY_PROFILER
         EASY_FUNCTION(profiler::colors::Orange);
 #endif
-        if (firstframe)
-        {
-            game->Init();
-            firstframe = false;
-        }
         // calculate frame time and pass it to game->Tick
         game->Tick(t.elapsed());
         t.reset();

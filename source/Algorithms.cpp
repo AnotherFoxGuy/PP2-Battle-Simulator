@@ -1,7 +1,8 @@
 #include "Algorithms.h"
 
+using namespace std;
 namespace PP2 {
-    LinkedList::LinkedList(): head(nullptr) {}
+    LinkedList::LinkedList() : head(nullptr) {}
 
     void LinkedList::InsertValue(int value) {
         Node *new_node = new Node(value);
@@ -26,6 +27,24 @@ namespace PP2 {
             std::cout << current->value << ", ";
             current = current->next;
         }
+    }
+
+    // -----------------------------------------------------------
+    // Sort tanks by health value using bucket sort
+    // -----------------------------------------------------------
+    vector <LinkedList> HP_sort(vector<Tank *> &input, int n_buckets) {
+        vector <LinkedList> buckets(n_buckets);
+        for (auto &tank : input) { buckets.at(tank->health / n_buckets).InsertValue(tank->health); }
+        return buckets;
+    }
+
+    // -----------------------------------------------------------
+    // Sort tanks by x(coordinates) value using bucket sort for even KD_tree distribution
+    // -----------------------------------------------------------
+    vector <LinkedList> KD_sort(vector<Tank *> &input, int n_buckets) {
+        vector <LinkedList> buckets(n_buckets);
+        for (auto &tank : input) { buckets.at(tank->Get_Position().x / n_buckets).InsertValue(tank->Get_Position().x); }
+        return buckets;
     }
 
     // Inserts a new node and returns root of modified tree
@@ -56,12 +75,12 @@ namespace PP2 {
 
     // Searches a Point represented by "_tank" in the K D tree.
     // The parameter depth is used to determine current axis.
-    bool searchRec(KD_node *root, Tank *_tank, unsigned depth) {
+    Tank *searchRec(KD_node *root, Tank *_tank, unsigned depth) {
         // Base cases
-        if (root == nullptr)
-            return false;
-        if (root->tank == _tank)
-            return true;
+//        if (root == nullptr)
+//            return false;
+//        if (root->tank == _tank)
+//            return true;
 
         // Current dimension is computed using current depth and total
         // Compare point with root with respect to cd (Current dimension)
@@ -74,7 +93,7 @@ namespace PP2 {
 
     // Searches a Point in the K D tree. It mainly uses
     // searchRec()
-    bool KD_search_tank(KD_node *root, Tank *_tank) {
+    Tank *KD_search_tank(KD_node *root, Tank *_tank) {
         // Pass current depth as 0
         return searchRec(root, _tank, 0);
     }

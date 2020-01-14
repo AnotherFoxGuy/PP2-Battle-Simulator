@@ -41,13 +41,17 @@ namespace PP2 {
         KD_node *left, *right;
     };
 
+    std::vector<LinkedList> HP_sort(std::vector<Tank *> &input, int n_buckets);
+
+    std::vector<LinkedList> KD_sort(std::vector<Tank *> &input, int n_buckets);
+
     KD_node *insertRec(KD_node *root, Tank *tank, unsigned depth);
 
     KD_node *KD_insert_tank(KD_node *root, Tank *_tank);
 
-    bool searchRec(KD_node *root, Tank *_tank, unsigned depth);
+    Tank *searchRec(KD_node *root, Tank *_tank, unsigned depth);
 
-    bool KD_search_tank(KD_node *root, Tank *_tank);
+    Tank *KD_search_tank(KD_node *root, Tank *_tank);
 }
 
 

@@ -87,8 +87,6 @@ private:
 
     void SortHealthBars();
 
-    std::vector<LinkedList> Sort(std::vector<Tank*>& input, int n_buckets);
-
     ~Game();
 };
 }; // namespace PP2

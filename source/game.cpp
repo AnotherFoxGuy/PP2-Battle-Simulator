@@ -1,6 +1,7 @@
 using namespace std;
 
 #include "template.h"
+#include "Algorithms.h"
 #include <iostream>
 #include <string>
 #include <SDL2/SDL.h>
@@ -170,6 +171,8 @@ Tank& Game::FindClosestEnemy(Tank& current_tank)
 #if PROFILE_PARALLEL == 1
     EASY_FUNCTION(profiler::colors::Purple);
 #endif
+
+
     float closest_distance = numeric_limits<float>::infinity();
     int closest_index = 0;
 
@@ -367,8 +370,8 @@ void Game::SortHealthBars()
     EASY_FUNCTION(profiler::colors::Yellow);
 #endif
     tbb::task_group g;
-    g.run([&] { redHealthBars = Sort(redTanks, 100); });
-    g.run([&] { blueHealthBars = Sort(blueTanks, 100); });
+    g.run([&] { redHealthBars = HP_sort(redTanks, 100); });
+    g.run([&] { blueHealthBars = HP_sort(blueTanks, 100); });
     g.wait();
 }
 
@@ -488,16 +491,6 @@ void Game::DrawTankHP(int i, char color, int health)
     drawPoints.emplace_back(
         SDL_Point{health_bar_end_x, health_bar_start_y + (int)((double)HEALTH_BAR_HEIGHT * (1 - ((double)health /
                                                                                                  (double)TANK_MAX_HEALTH)))});
-}
-
-// -----------------------------------------------------------
-// Sort tanks by health value using bucket sort
-// -----------------------------------------------------------
-vector<LinkedList> Game::Sort(vector<Tank*>& input, int n_buckets)
-{
-    vector<LinkedList> buckets(n_buckets);
-    for (auto& tank : input) { buckets.at(tank->health / n_buckets).InsertValue(tank->health); }
-    return buckets;
 }
 
 // -----------------------------------------------------------
