@@ -2,10 +2,12 @@
 
 using namespace std;
 namespace PP2 {
-    LinkedList::LinkedList() : head(nullptr) {}
+    template<class T>
+    LinkedList<T>::LinkedList() : head(nullptr) {}
 
-    void LinkedList::InsertValue(int value) {
-        Node *new_node = new Node(value);
+    template<class T>
+    void LinkedList<T>::InsertValue(T value) {
+        Node<T> *new_node = new Node<T>(value);
 
         if (head == nullptr || value <= head->value) {
             new_node->next = head;
@@ -13,37 +15,36 @@ namespace PP2 {
             return;
         }
 
-        Node *current = head;
+        Node<T> *current = head;
         while (current->next != nullptr && value >= current->next->value) { current = current->next; }
 
         //Add node
         new_node->next = current->next;
         current->next = new_node;
     }
-
-    void LinkedList::PrintList() {
-        Node *current = head;
-        while (current != nullptr) {
-            std::cout << current->value << ", ";
-            current = current->next;
-        }
+    template<class T>
+    void Node<T>::DNode() {
+        delete next;
     }
-
+    template <>
+    void Node<vec2<>>::DNode() {
+        if (next) delete next;
+    }
     // -----------------------------------------------------------
     // Sort tanks by health value using bucket sort
     // -----------------------------------------------------------
-    vector <LinkedList> HP_sort(vector<Tank *> &input, int n_buckets) {
-        vector <LinkedList> buckets(n_buckets);
-        for (auto &tank : input) { buckets.at(tank->health / n_buckets).InsertValue(tank->health); }
+    vector <LinkedList<int>> HP_sort(vector<Tank *> &input, int n_buckets) {
+        vector <LinkedList<int>> buckets(n_buckets);
+        for (auto tank : input) { buckets.at(tank->health / n_buckets).InsertValue(tank->health); }
         return buckets;
     }
 
     // -----------------------------------------------------------
     // Sort tanks by x(coordinates) value using bucket sort for even KD_tree distribution
     // -----------------------------------------------------------
-    vector <LinkedList> KD_sort(vector<Tank *> &input, int n_buckets) {
-        vector <LinkedList> buckets(n_buckets);
-        for (auto &tank : input) { buckets.at(tank->Get_Position().x / n_buckets).InsertValue(tank->Get_Position().x); }
+    vector <LinkedList<vec2<>>> KD_sort(vector<Tank *> &input, int n_buckets) {
+        vector <LinkedList<vec2<>>> buckets(n_buckets);
+        for (auto &tank : input) { buckets.at(tank->Get_Position().x / n_buckets).InsertValue(tank->position); }
         return buckets;
     }
 
@@ -73,14 +74,21 @@ namespace PP2 {
         return insertRec(root, _tank, 0);
     }
 
+
     // Searches a Point represented by "_tank" in the K D tree.
     // The parameter depth is used to determine current axis.
     Tank *searchRec(KD_node *root, Tank *_tank, unsigned depth) {
-        // Base cases
-//        if (root == nullptr)
-//            return false;
-//        if (root->tank == _tank)
-//            return true;
+        float min_distance = numeric_limits<float>::infinity();
+        Tank* closest_Tank = root->tank;
+
+        float sqrDist = fabsf((_tank->Get_Position() - root->tank->Get_Position()).sqrLength());
+        if (sqrDist < min_distance) {
+            min_distance = sqrDist;
+            closest_Tank = root->tank;
+        }
+
+        if (root->left == nullptr)
+            return closest_Tank;
 
         // Current dimension is computed using current depth and total
         // Compare point with root with respect to cd (Current dimension)
@@ -93,7 +101,7 @@ namespace PP2 {
 
     // Searches a Point in the K D tree. It mainly uses
     // searchRec()
-    Tank *KD_search_tank(KD_node *root, Tank *_tank) {
+    Tank *KD_search_closest_tank(KD_node *root, Tank *_tank) {
         // Pass current depth as 0
         return searchRec(root, _tank, 0);
     }

@@ -31,6 +31,8 @@ public:
 
     void MeasurePerformance();
 
+    void BuildKDTree();
+
     Tank& FindClosestEnemy(Tank& current_tank);
 
     void DrawTankHP(int i, char color, int health);
@@ -69,6 +71,8 @@ private:
     std::vector<Smoke> smokes;
     std::vector<Explosion> explosions;
     std::vector<Particle_beam> particle_beams;
+    
+    bool build_KD_tree = true;
 
     //Font *frame_count_font;
     long long frame_count = 0;

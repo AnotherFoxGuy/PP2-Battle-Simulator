@@ -11,27 +11,31 @@
 #include <iostream>
 
 namespace PP2 {
+    template<class T>
     class Node {
     public:
-        Node()
-                : value(0), next(nullptr) {}
+        Node() : value(nullptr), next(nullptr) {}
 
-        Node(int value)
-                : value(value), next(nullptr) {}
+        Node(T value) : value(value), next(nullptr) {}
 
-        int value;
-        Node *next;
+        ~Node() { DNode(); }
+
+        void DNode();
+        
+        T value;
+        Node<T> *next;
     };
 
+    template<class T>
     class LinkedList {
     public:
         LinkedList();
 
-        void InsertValue(int value);
+        ~LinkedList() { if(head != nullptr) delete head; }
 
-        void PrintList();
+        void InsertValue(T value);
 
-        Node *head;
+        Node<T> *head;
     };
 
     class KD_node {
@@ -41,9 +45,9 @@ namespace PP2 {
         KD_node *left, *right;
     };
 
-    std::vector<LinkedList> HP_sort(std::vector<Tank *> &input, int n_buckets);
+    std::vector<LinkedList<int>> HP_sort(std::vector<Tank *> &input, int n_buckets);
 
-    std::vector<LinkedList> KD_sort(std::vector<Tank *> &input, int n_buckets);
+    std::vector<LinkedList<vec2<>>> KD_sort(std::vector<Tank *> &input, int n_buckets);
 
     KD_node *insertRec(KD_node *root, Tank *tank, unsigned depth);
 
@@ -51,7 +55,7 @@ namespace PP2 {
 
     Tank *searchRec(KD_node *root, Tank *_tank, unsigned depth);
 
-    Tank *KD_search_tank(KD_node *root, Tank *_tank);
+    Tank *KD_search_closest_tank(KD_node *root, Tank *_tank);
 }
 
 
