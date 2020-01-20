@@ -96,7 +96,7 @@ void Game::Init()
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
 
-    frameCountFont = TTF_OpenFont("assets/digital-7.ttf", 64);  //this opens a font style and sets a size
+    frameCountFont = TTF_OpenFont("assets/digital-7.ttf", 64); //this opens a font style and sets a size
     endScreenFont = TTF_OpenFont("assets/digital-7.ttf", 256); //this opens a font style and sets a size
 
     Uint32* pixels = nullptr;
@@ -247,7 +247,7 @@ void Game::UpdateTanks()
                               {
                                   int x = tank.gridCell.x + cell.x;
                                   int y = tank.gridCell.y + cell.y;
-                                  if (x < 0 || y < 0 || x > GRID_SIZE_X || y > GRID_SIZE_Y) continue;
+                                  if (x < 0 || y < 0 || x > GRID_SIZE || y > GRID_SIZE) continue;
 
                                   for (auto& oTank : Grid::Instance()->grid[x][y])
                                   {
@@ -326,7 +326,7 @@ void Game::UpdateRockets()
                                   vec2<int> rocketGridCell = Grid::GetGridCell(uRocket.position);
                                   int x = rocketGridCell.x + cell.x;
                                   int y = rocketGridCell.y + cell.y;
-                                  if (x < 0 || y < 0 || x > GRID_SIZE_X || y > GRID_SIZE_Y) continue;
+                                  if (x < 0 || y < 0 || x > GRID_SIZE || y > GRID_SIZE) continue;
 
                                   for (auto& tank : Grid::Instance()->grid[x][y])
                                   {

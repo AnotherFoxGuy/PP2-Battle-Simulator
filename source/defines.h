@@ -15,8 +15,9 @@
 #define NUM_TANKS_BLUE 1279
 #define NUM_TANKS_RED 1279
 
-#define GRID_SIZE_X 64
-#define GRID_SIZE_Y 48
+#define GRID_SIZE 80
+#define GRID_OFFSET 8
+
 
 #define TANK_MAX_HEALTH 1000
 #define ROCKET_HIT_VALUE 60
