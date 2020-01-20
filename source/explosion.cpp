@@ -11,11 +11,14 @@ PP2::Explosion::Explosion(SDL_Texture* explosion_sprite, vec2<> position)
 
 bool PP2::Explosion::done() const { return current_frame > 17; }
 
-void PP2::Explosion::Tick() { if (current_frame < 18) current_frame++; }
+void PP2::Explosion::Tick()
+{
+    if (current_frame < 18) current_frame++;
+}
 
 void PP2::Explosion::Draw(SDL_Renderer* screen)
 {
-    if(!InScreen(position))
+    if (!InScreen(position))
         return;
 
     /* explosion_sprite->SetFrame(current_frame / 2);

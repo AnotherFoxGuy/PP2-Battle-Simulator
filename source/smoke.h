@@ -1,13 +1,13 @@
 #pragma once
 
-#include <SDL2/SDL_render.h>
 #include "template.h"
+#include <SDL2/SDL_render.h>
 
 namespace PP2
 {
 class Smoke
 {
-public:
+  public:
     Smoke(SDL_Texture* smoke_sprite, vec2<> position);
 
     void Tick();

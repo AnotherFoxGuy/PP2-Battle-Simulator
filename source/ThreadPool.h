@@ -1,9 +1,9 @@
 #pragma once
 
-#include <thread>
-#include <future>
-#include <vector>
 #include <deque>
+#include <future>
+#include <thread>
+#include <vector>
 
 namespace PP2
 {
@@ -13,22 +13,25 @@ class Worker;
 
 class Worker
 {
-public:
+  public:
     //Instantiate the worker class by passing and storing the threadpool as a reference
     Worker(ThreadPool& s)
         : pool(s) {}
 
     inline void operator()();
 
-private:
+  private:
     ThreadPool& pool;
 };
 
 class ThreadPool
 {
-public:
+  public:
     ThreadPool(size_t numThreads)
-        : stop(false) { for (size_t i = 0; i < numThreads; ++i) workers.push_back(std::thread(Worker(*this))); }
+        : stop(false)
+    {
+        for (size_t i = 0; i < numThreads; ++i) workers.push_back(std::thread(Worker(*this)));
+    }
 
     ~ThreadPool()
     {
@@ -58,7 +61,7 @@ public:
         return wrapper->get_future();
     }
 
-private:
+  private:
     friend class Worker; //Gives access to the private variables of this class
 
     std::vector<std::thread> workers;

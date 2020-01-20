@@ -1,13 +1,13 @@
 #pragma once
 
-#include <SDL2/SDL_render.h>
 #include "template.h"
+#include <SDL2/SDL_render.h>
 
 namespace PP2
 {
 class Rocket
 {
-public:
+  public:
     Rocket(vec2<> position, vec2<> direction, float collision_radius, allignments allignment, SDL_Texture* rocket_sprite);
 
     ~Rocket();

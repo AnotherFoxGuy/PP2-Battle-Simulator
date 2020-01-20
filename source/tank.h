@@ -1,13 +1,13 @@
 #pragma once
 
-#include <SDL2/SDL_render.h>
 #include "template.h"
+#include <SDL2/SDL_render.h>
 
 namespace PP2
 {
 class Tank
 {
-public:
+  public:
     Tank(float pos_x, float pos_y, allignments allignment, SDL_Texture* tank_sprite, SDL_Texture* smoke_sprite, float tar_x,
          float tar_y, float collision_radius, int health, float max_speed);
 

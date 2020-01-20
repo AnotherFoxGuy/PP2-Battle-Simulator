@@ -14,7 +14,8 @@ Particle_beam::Particle_beam()
 
 Particle_beam::Particle_beam(vec2<> min, vec2<> max, SDL_Texture* particle_beam_sprite, int damage)
     : particle_beam_sprite(
-          particle_beam_sprite), sprite_frame(0), damage(damage)
+          particle_beam_sprite),
+      sprite_frame(0), damage(damage)
 {
     min_position = min;
     max_position = min + max;
@@ -23,7 +24,10 @@ Particle_beam::Particle_beam(vec2<> min, vec2<> max, SDL_Texture* particle_beam_
     rectangle = Rectangle2D(min_position, max_position);
 }
 
-void Particle_beam::tick() { if (++sprite_frame == 30) { sprite_frame = 0; } }
+void Particle_beam::tick()
+{
+    if (++sprite_frame == 30) { sprite_frame = 0; }
+}
 
 void Particle_beam::Draw(SDL_Renderer* screen)
 {

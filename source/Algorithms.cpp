@@ -67,7 +67,7 @@ KD_node* KD_Tree::BuildKDTree(std::vector<Tank*> input, unsigned depth)
 
     // Sort input based on current depth
     sort(input.begin(), input.end(), [axis](Tank* a, Tank* b) {
-            return a->position[axis] < b->position[axis];
+        return a->position[axis] < b->position[axis];
     });
 
     Tank* tank = input[input.size() / 2];

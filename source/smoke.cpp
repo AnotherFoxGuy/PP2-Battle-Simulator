@@ -11,11 +11,14 @@ Smoke::Smoke(SDL_Texture* smoke_sprite, vec2<> position)
     DestR = {0, 0, S_SIZE, S_SIZE};
 }
 
-void Smoke::Tick() { if (++current_frame == 60) current_frame = 0; }
+void Smoke::Tick()
+{
+    if (++current_frame == 60) current_frame = 0;
+}
 
 void Smoke::Draw(SDL_Renderer* screen)
 {
-    if(!InScreen(position))
+    if (!InScreen(position))
         return;
 
     /*smoke_sprite.SetFrame(current_frame / 15);

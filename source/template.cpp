@@ -15,8 +15,8 @@
 #include "defines.h"
 #include "game.h"
 #include <SDL2/SDL.h>
-#include <iostream>
 #include <SDL2/SDL_ttf.h>
+#include <iostream>
 
 #ifdef USING_EASY_PROFILER
 
@@ -54,7 +54,8 @@ mat4 operator*(const mat4& a, const mat4& b)
 
 bool operator==(const mat4& a, const mat4& b)
 {
-    for (uint i = 0; i < 16; i++) if (a.cell[i] != b.cell[i]) return false;
+    for (uint i = 0; i < 16; i++)
+        if (a.cell[i] != b.cell[i]) return false;
     return true;
 }
 
@@ -127,7 +128,6 @@ void NotifyUser(const char* s)
 using namespace PP2;
 using namespace std;
 
-
 int ACTWIDTH, ACTHEIGHT;
 static bool firstframe = true;
 
@@ -136,7 +136,9 @@ SDL_Window* window = 0;
 
 #ifdef _MSC_VER
 
-void redirectIO() {}
+void redirectIO()
+{
+}
 
 #endif
 
@@ -160,7 +162,7 @@ int main(int argc, char** argv)
 #else
     window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN);
 #endif
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED  /*| SDL_RENDERER_PRESENTVSYNC*/);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
 
     int exitapp = 0;
     game = new Game();
@@ -189,22 +191,28 @@ int main(int argc, char** argv)
         {
             switch (event.type)
             {
-            case SDL_QUIT: exitapp = 1;
+            case SDL_QUIT:
+                exitapp = 1;
                 break;
-            case SDL_KEYDOWN: if (event.key.keysym.sym == SDLK_ESCAPE)
+            case SDL_KEYDOWN:
+                if (event.key.keysym.sym == SDLK_ESCAPE)
                 {
                     exitapp = 1;
                     // find other keys here: http://sdl.beuc.net/sdl.wiki/SDLKey
                 }
                 game->KeyDown(event.key.keysym.scancode);
                 break;
-            case SDL_KEYUP: game->KeyUp(event.key.keysym.scancode);
+            case SDL_KEYUP:
+                game->KeyUp(event.key.keysym.scancode);
                 break;
-            case SDL_MOUSEMOTION: game->MouseMove(event.motion.x, event.motion.y);
+            case SDL_MOUSEMOTION:
+                game->MouseMove(event.motion.x, event.motion.y);
                 break;
-            case SDL_MOUSEBUTTONUP: game->MouseUp(event.button.button);
+            case SDL_MOUSEBUTTONUP:
+                game->MouseUp(event.button.button);
                 break;
-            case SDL_MOUSEBUTTONDOWN: game->MouseDown(event.button.button);
+            case SDL_MOUSEBUTTONDOWN:
+                game->MouseDown(event.button.button);
                 break;
             default: break;
             }

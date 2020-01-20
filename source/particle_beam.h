@@ -1,14 +1,14 @@
 #pragma once
 
-#include <vector>
-#include <SDL2/SDL_render.h>
 #include "template.h"
+#include <SDL2/SDL_render.h>
+#include <vector>
 
 namespace PP2
 {
 class Particle_beam
 {
-public:
+  public:
     Particle_beam();
 
     Particle_beam(vec2<> min, vec2<> max, SDL_Texture* particle_beam_sprite, int damage);

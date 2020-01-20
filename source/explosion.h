@@ -1,13 +1,13 @@
 #pragma once
 
-#include <SDL2/SDL_render.h>
 #include "template.h"
+#include <SDL2/SDL_render.h>
 
 namespace PP2
 {
 class Explosion
 {
-public:
+  public:
     Explosion(SDL_Texture* explosion_sprite, vec2<> position);
 
     bool done() const;
@@ -23,4 +23,4 @@ public:
     SDL_Rect SrcR;
     SDL_Rect DestR;
 };
-}
+} // namespace PP2
