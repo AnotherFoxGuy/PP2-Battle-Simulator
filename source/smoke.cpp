@@ -15,6 +15,9 @@ void Smoke::Tick() { if (++current_frame == 60) current_frame = 0; }
 
 void Smoke::Draw(SDL_Renderer* screen)
 {
+    if(!InScreen(position))
+        return;
+
     /*smoke_sprite.SetFrame(current_frame / 15);
 
     smoke_sprite.Draw(screen, (int) position.x, (int) position.y);*/

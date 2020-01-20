@@ -12,7 +12,7 @@ Rocket::Rocket(vec2<> position, vec2<> direction, float collision_radius, allign
     DestR = {0, 0, R_SIZE, R_SIZE};
 }
 
-Rocket::~Rocket() { }
+Rocket::~Rocket() {}
 
 void Rocket::Tick()
 {
@@ -23,6 +23,9 @@ void Rocket::Tick()
 //Draw the sprite with the facing based on this rockets movement direction
 void Rocket::Draw(SDL_Renderer* screen)
 {
+    if (!InScreen(position))
+        return;
+
     /*rocket_sprite->SetFrame(((abs(speed.x) > abs(speed.y)) ? ((speed.x < 0) ? 3 : 0) : ((speed.y < 0) ? 9 : 6)) +
                             (current_frame / 3));
     rocket_sprite->Draw(screen, (int) position.x - 12, (int) position.y - 12);*/
