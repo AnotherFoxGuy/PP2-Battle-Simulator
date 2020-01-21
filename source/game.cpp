@@ -4,6 +4,7 @@ using namespace std;
 #include "template.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_FontCache.h>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -42,12 +43,7 @@ static SDL_Surface* particle_beam_img = SDL_LoadBMP("assets/Particle_Beam.bmp");
 static SDL_Surface* smoke_img = SDL_LoadBMP("assets/Smoke.bmp");
 static SDL_Surface* explosion_img = SDL_LoadBMP("assets/Explosion.bmp");
 
-TTF_Font* frameCountFont;
-TTF_Font* endScreenFont;
-static SDL_Color White = {255, 255, 255};
-static SDL_Rect frameCounter_message_rect = {5, 5, 100, 50}; //create a rect
-SDL_Surface* text_surface;
-SDL_Texture* text_texture;
+FC_Font* GameFont;
 
 SDL_Texture* tankThreads;
 SDL_Texture* tank_red;
@@ -72,11 +68,6 @@ vector<SDL_Point> drawPoints = {};
 
 mutex tankVectorMutex;
 
-SDL_Rect end_message_rectl1 = {500, 210, 300, 60};
-SDL_Rect end_message_rectl2 = {500, 300, 300, 60};
-
-SDL_Texture* end_message_texturel1;
-SDL_Texture* end_message_texturel2;
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -96,8 +87,9 @@ void Game::Init()
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
 
-    frameCountFont = TTF_OpenFont("assets/digital-7.ttf", 64); //this opens a font style and sets a size
-    endScreenFont = TTF_OpenFont("assets/digital-7.ttf", 256); //this opens a font style and sets a size
+
+    GameFont = FC_CreateFont();
+    FC_LoadFont(GameFont, screen, "assets/digital-7.ttf", 72, FC_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
 
     Uint32* pixels = nullptr;
     int pitch = 0;
@@ -161,8 +153,7 @@ void Game::Shutdown() {}
 Game::~Game()
 {
     //delete frame_count_font;
-    SDL_DestroyTexture(text_texture);
-    SDL_FreeSurface(text_surface);
+    FC_FreeFont(GameFont);
 }
 
 void Game::BuildKDTree()
@@ -524,17 +515,6 @@ void PP2::Game::MeasurePerformance()
             lock_update = true;
             duration = perf_timer.elapsed();
             cout << "Duration was: " << duration << " (Replace REF_PERFORMANCE with this value)" << endl;
-
-            int ms = (int)duration % 1000, sec = ((int)duration / 1000) % 60, min = ((int)duration / 60000);
-            sprintf(buffer, " %02i:%02i:%03i ", min, sec, ms);
-            text_surface = TTF_RenderText_Solid(endScreenFont, buffer, White);
-            end_message_texturel1 = SDL_CreateTextureFromSurface(screen, text_surface);
-
-            sprintf(buffer, "SPEEDUP: %4.1f", REF_PERFORMANCE / duration);
-            text_surface = TTF_RenderText_Solid(endScreenFont, buffer, White);
-            end_message_texturel2 = SDL_CreateTextureFromSurface(screen, text_surface);
-
-            SDL_FreeSurface(text_surface);
         }
 
         frame_count--;
@@ -545,8 +525,9 @@ void PP2::Game::MeasurePerformance()
         SDL_Rect r = {420, 170, 450, 260};
         SDL_SetRenderDrawColor(screen, 0, 0, 0, 255);
         SDL_RenderFillRect(screen, &r);
-        SDL_RenderCopy(screen, end_message_texturel1, NULL, &end_message_rectl1);
-        SDL_RenderCopy(screen, end_message_texturel2, NULL, &end_message_rectl2);
+
+        int ms = (int)duration % 1000, sec = ((int)duration / 1000) % 60, min = ((int)duration / 60000);
+        FC_Draw(GameFont, screen, 470, 220, " %02i:%02i:%03i \n SPEEDUP: %4.1f", min, sec, ms, REF_PERFORMANCE / duration);
     }
 }
 
@@ -582,14 +563,6 @@ void Game::Tick(float deltaTime)
     {
         //Print frame count
         frame_count++;
-        char buffer[6];
-        sprintf(buffer, "%lld", frame_count);
-        text_surface = TTF_RenderText_Solid(frameCountFont, buffer, White);
-        text_texture = SDL_CreateTextureFromSurface(screen, text_surface);
-
-        SDL_RenderCopy(screen, text_texture, NULL, &frameCounter_message_rect);
-
-        SDL_DestroyTexture(text_texture);
-        SDL_FreeSurface(text_surface);
+        FC_Draw(GameFont, screen, 5, 5, "%lld", frame_count);
     }
 }

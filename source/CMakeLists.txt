@@ -6,6 +6,8 @@ project(PP2)
 ####################################################################################################
 
 set(SOURCE_FILES
+        ${CMAKE_SOURCE_DIR}/external/SDL_FontCache/SDL_FontCache.c
+        ${CMAKE_SOURCE_DIR}/external/SDL_FontCache/SDL_FontCache.h
         ThreadPool.h
         explosion.{h,cpp}
         game.{h,cpp}
@@ -25,7 +27,7 @@ expand_file_extensions(SOURCE_FILES ${SOURCE_FILES})
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-target_include_directories(${PROJECT_NAME} PUBLIC .)
+target_include_directories(${PROJECT_NAME} PUBLIC . ${CMAKE_SOURCE_DIR}/external/SDL_FontCache/)
 if (USE_PACKAGE_MANAGER)
     # Generate source groups for use in IDEs
     generate_source_groups(${SOURCE_FILES})
