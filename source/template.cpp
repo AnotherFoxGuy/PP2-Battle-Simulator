@@ -16,7 +16,9 @@
 #include "game.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL_syswm.h>
 #include <iostream>
+#include <Windows.h>
 
 #ifdef USING_EASY_PROFILER
 
@@ -163,6 +165,12 @@ int main(int argc, char** argv)
     window = SDL_CreateWindow(TEMPLATE_VERSION, 100, 100, SCRWIDTH, SCRHEIGHT, SDL_WINDOW_SHOWN);
 #endif
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED /*| SDL_RENDERER_PRESENTVSYNC*/);
+
+    /*SDL_SysWMinfo wmInfo;
+    SDL_VERSION(&wmInfo.version);
+    SDL_GetWindowWMInfo(window, &wmInfo);
+    HWND hwnd = wmInfo.info.win.window;
+    ShowWindow(hwnd, SW_MINIMIZE);*/
 
     int exitapp = 0;
     game = new Game();

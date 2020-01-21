@@ -25,6 +25,8 @@ Grid* Grid::Instance()
 
 vec2<int> Grid::GetGridCell(const vec2<>& position)
 {
+    // 0.05f => 100 / 2000 (assuming tanks wont go outside [x](-200, 1800), [y](-200, 1800))
+    // clamp makes sure tanks are always inside the grid, if the go outside it the will be set back to the min/max grid cell values
     int x = std::clamp((0.05f * position.x) * (GRID_SIZE / 100.f), -(float)GRID_OFFSET, (float)GRID_SIZE - GRID_OFFSET);
     int y = std::clamp((0.05f * position.y) * (GRID_SIZE / 100.f), -(float)GRID_OFFSET, (float)GRID_SIZE - GRID_OFFSET);
 

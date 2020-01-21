@@ -135,7 +135,7 @@ void Game::Init()
     for (auto& tank : tanks)
     {
         instance->AddTankToGridCell(&tank);
-        if (tank.allignment == RED)
+        if (tank.alliance == RED)
             redTanks.emplace_back(&tank);
         else
             blueTanks.emplace_back(&tank);
@@ -156,21 +156,6 @@ Game::~Game()
     FC_FreeFont(GameFont);
 }
 
-void Game::BuildKDTree()
-{
-#ifdef USING_EASY_PROFILER
-    EASY_BLOCK("BuildKDTree", profiler::colors::Black);
-#endif
-    tbb::task_group KD_sort_group;
-    KD_sort_group.run([&] {
-        red_KD_Tree = new KD_Tree(redTanks);
-    });
-    KD_sort_group.run([&] {
-        blue_KD_Tree = new KD_Tree(blueTanks);
-    });
-    KD_sort_group.wait();
-}
-
 // -----------------------------------------------------------
 // Update the game state:
 // Move all objects
@@ -187,9 +172,6 @@ void Game::Update(float deltaTime)
     {
         BuildKDTree();
     }
-
-    //Update tanks
-    UpdateTanks();
 
     //Update particle beams
     UpdateParticleBeams();
@@ -213,8 +195,31 @@ void Game::Update(float deltaTime)
         std::remove_if(rockets.begin(), rockets.end(), [](const Rocket& rocket) { return !rocket.active; }),
         rockets.end());
 
-    // Sort HP bars
-    SortHealthBars();
+    tbb::task_group update_Group;
+    //Update tanks
+    update_Group.run([&] { UpdateTanks(); });
+    update_Group.run([&] {
+#ifdef USING_EASY_PROFILER
+        EASY_BLOCK("UpdateRedHP", profiler::colors::Red);
+#endif
+        redHealthBars = LinkedList<int>::Sort(redTanks, 100); });
+    update_Group.run([&] {
+#ifdef USING_EASY_PROFILER
+        EASY_BLOCK("UpdateBlueHP", profiler::colors::Blue);
+#endif
+        blueHealthBars = LinkedList<int>::Sort(blueTanks, 100); });
+    update_Group.wait();
+}
+
+void Game::BuildKDTree()
+{
+#ifdef USING_EASY_PROFILER
+    EASY_BLOCK("BuildKDTree", profiler::colors::Black);
+#endif
+    tbb::task_group KD_sort_group;
+    KD_sort_group.run([&] { red_KD_Tree = new KD_Tree(redTanks); });
+    KD_sort_group.run([&] { blue_KD_Tree = new KD_Tree(blueTanks); });
+    KD_sort_group.wait();
 }
 
 void Game::UpdateTanks()
@@ -272,14 +277,13 @@ void Game::UpdateTanks()
 
                               //Shoot at closest target if reloaded
                               if (!tank.Rocket_Reloaded()) continue;
-                              Tank* target = tank.allignment == RED ? blue_KD_Tree->findClosestTankV2(&tank) : red_KD_Tree->findClosestTankV2(&tank);
-                              //Tank* target = tank.allignment == RED ? blue_KD_Tree->findClosestTank(&tank) : red_KD_Tree->findClosestTank(&tank);
+                              Tank* target = tank.alliance == RED ? blue_KD_Tree->findClosestTank(&tank) : red_KD_Tree->findClosestTank(&tank);
                               scoped_lock lock2(tankVectorMutex);
                               rockets.emplace_back(tank.position,
                                                    (target->position - tank.position).normalized() * 3,
                                                    rocket_radius,
-                                                   tank.allignment,
-                                                   ((tank.allignment == RED) ? rocket_red : rocket_blue));
+                                                   tank.alliance,
+                                                   ((tank.alliance == RED) ? rocket_red : rocket_blue));
                               tank.Reload_Rocket();
                           }
                       });
@@ -321,7 +325,7 @@ void Game::UpdateRockets()
 
                                   for (auto& tank : Grid::Instance()->grid[x][y])
                                   {
-                                      if (tank->active && (tank->allignment != uRocket.allignment) &&
+                                      if (tank->active && (tank->alliance != uRocket.allignment) &&
                                           uRocket.Intersects(tank->position, tank->collision_radius))
                                       {
                                           scoped_lock lock(tankVectorMutex);
@@ -364,17 +368,6 @@ void Game::UpdateExplosions()
     {
         uExplosion.Tick();
     }
-}
-
-void Game::SortHealthBars()
-{
-#ifdef USING_EASY_PROFILER
-    EASY_FUNCTION(profiler::colors::Yellow);
-#endif
-    tbb::task_group HP_sort_group;
-    HP_sort_group.run([&] { redHealthBars = LinkedList<int>::Sort(redTanks, 100); });
-    HP_sort_group.run([&] { blueHealthBars = LinkedList<int>::Sort(blueTanks, 100); });
-    HP_sort_group.wait();
 }
 
 void Game::Draw()

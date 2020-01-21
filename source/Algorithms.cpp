@@ -83,18 +83,18 @@ KD_node* KD_Tree::BuildKDTree(std::vector<Tank*> input, unsigned depth)
 }
 
 // Searches the closest enemy tank in the K D tree.
-Tank* KD_Tree::findClosestTankV2(Tank* tank)
+Tank* KD_Tree::findClosestTank(Tank* tank)
 {
     // some tanks go outside the screen, that is why we add some margin.
     float errorMargin = 250.f;
     float max = numeric_limits<float>::infinity();
-    vec2<> hyperplane[] = {vec2<>(0 - errorMargin, 0 - errorMargin), vec2<>(1280 + errorMargin, 720 + errorMargin)};
+    Rectangle2D hyperplane = {{-250.f, -250.f}, {1750.f, 1750.f}};
 
     // root is at depth of 0
     return searchNN(root, tank, hyperplane, max, nullptr, 0);
 }
 
-Tank* KD_Tree::searchNN(KD_node* currentNode, Tank* target, vec2<> hyperplane[], float distanceCurrentClosestTank, Tank* currentClosestTank, int depth)
+Tank* KD_Tree::searchNN(KD_node* currentNode, Tank* target, Rectangle2D& hyperplane, float distanceCurrentClosestTank, Tank* currentClosestTank, int depth)
 {
 #ifdef USING_EASY_PROFILER
     //EASY_BLOCK("searchNN", profiler::colors::Red);
@@ -104,44 +104,39 @@ Tank* KD_Tree::searchNN(KD_node* currentNode, Tank* target, vec2<> hyperplane[],
 
     // X[0], Y[1] axis
     int axis = depth % 2;
-    vec2<> leftOrTopHyperplane[2] = {}, rightOrBottomHyperplane[2] = {};
-    vec2<> closestHyperplane[2] = {}, furthestHyperplane[2] = {};
+    Rectangle2D leftOrTopHyperplane = {}, rightOrBottomHyperplane = {}, closestHyperplane = {}, furthestHyperplane = {};
     KD_node *closestNode = nullptr, *furthestNode = nullptr;
 
     // X axis, divide vertical
     if (axis == 0)
     {
-        leftOrTopHyperplane[0] = hyperplane[0];
-        leftOrTopHyperplane[1] = vec2<>(currentNode->tank->position[0], hyperplane[1][1]);
-        rightOrBottomHyperplane[0] = vec2<>(currentNode->tank->position[0], hyperplane[0][1]);
-        rightOrBottomHyperplane[1] = hyperplane[1];
+        leftOrTopHyperplane = {hyperplane.min, {currentNode->tank->position.x, hyperplane.max.y}};
+        rightOrBottomHyperplane = {{currentNode->tank->position.x, hyperplane.min.y}, hyperplane.max};
     }
     // Y axis, divide horizontal
     if (axis == 1)
     {
-        leftOrTopHyperplane[0] = hyperplane[0];
-        leftOrTopHyperplane[1] = vec2<>(hyperplane[1][0], currentNode->tank->position[1]);
-        rightOrBottomHyperplane[0] = vec2<>(hyperplane[0][0], currentNode->tank->position[1]);
-        rightOrBottomHyperplane[1] = hyperplane[1];
+        leftOrTopHyperplane = {hyperplane.min, {hyperplane.max.x, currentNode->tank->position.y}};
+        rightOrBottomHyperplane = {{hyperplane.min.x, currentNode->tank->position.y}, hyperplane.max};
     }
     // check which hyperplane the target(tank that's firing) belongs to
     if (target->position[axis] <= currentNode->tank->position[axis])
     {
         closestNode = currentNode->left;
         furthestNode = currentNode->right;
-        memcpy(closestHyperplane, leftOrTopHyperplane, sizeof(closestHyperplane));
-        memcpy(furthestHyperplane, rightOrBottomHyperplane, sizeof(furthestHyperplane));
+        closestHyperplane = leftOrTopHyperplane;
+        furthestHyperplane = rightOrBottomHyperplane;
     }
     if (target->position[axis] > currentNode->tank->position[axis])
     {
         closestNode = currentNode->right;
         furthestNode = currentNode->left;
-        memcpy(closestHyperplane, rightOrBottomHyperplane, sizeof(closestHyperplane));
-        memcpy(furthestHyperplane, leftOrTopHyperplane, sizeof(furthestHyperplane));
+        closestHyperplane = rightOrBottomHyperplane;
+        furthestHyperplane = leftOrTopHyperplane;
     }
 
     // check if the current node is closer to the target
-    float dist = pow(currentNode->tank->position[0] - target->position[0], 2) + pow(currentNode->tank->position[1] - target->position[1], 2);
+    float dist = pow(currentNode->tank->position.x - target->position.x, 2) + pow(currentNode->tank->position.y - target->position.y, 2);
     if (dist < distanceCurrentClosestTank)
     {
         currentClosestTank = currentNode->tank;
@@ -152,17 +147,17 @@ Tank* KD_Tree::searchNN(KD_node* currentNode, Tank* target, vec2<> hyperplane[],
     Tank* closestTank = searchNN(closestNode, target, closestHyperplane, distanceCurrentClosestTank, currentClosestTank, depth + 1);
 
     float distanceClosestTank = 0;
-    dist = pow(closestTank->position[0] - target->position[0], 2) + pow(closestTank->position[1] - target->position[1], 2);
+    dist = pow(closestTank->position.x - target->position.x, 2) + pow(closestTank->position.y - target->position.y, 2);
     if (distanceCurrentClosestTank < dist)
     {
         closestTank = currentClosestTank;
         distanceClosestTank = distanceCurrentClosestTank;
     }
 
-    float pointX = calculateCurrentClosest(target->position[0], furthestHyperplane[0][0], furthestHyperplane[1][0]);
-    float pointY = calculateCurrentClosest(target->position[1], furthestHyperplane[1][1], furthestHyperplane[0][1]);
+    float pointX = calculateCurrentClosest(target->position.x, furthestHyperplane.min.x, furthestHyperplane.max.x);
+    float pointY = calculateCurrentClosest(target->position.y, furthestHyperplane.min.y, furthestHyperplane.max.y);
 
-    dist = pow((pointX - target->position[0]), 2) + pow((pointY - target->position[1]), 2);
+    dist = pow((pointX - target->position.x), 2) + pow((pointY - target->position.y), 2);
 
     if (dist < distanceClosestTank)
         closestTank = searchNN(furthestNode, target, furthestHyperplane, distanceCurrentClosestTank, currentClosestTank, depth + 1);
@@ -170,12 +165,15 @@ Tank* KD_Tree::searchNN(KD_node* currentNode, Tank* target, vec2<> hyperplane[],
 }
 float KD_Tree::calculateCurrentClosest(float targetXY, float hyperplaneMinXY, float hyperplaneMaxXY)
 {
-    if (targetXY <= hyperplaneMinXY)
-        return hyperplaneMinXY;
+    float value = 0;
+    if (hyperplaneMinXY < targetXY && targetXY > hyperplaneMaxXY)
+        value = targetXY;
+    else if (targetXY <= hyperplaneMinXY)
+        value = hyperplaneMinXY;
     else if (targetXY >= hyperplaneMaxXY)
-        return hyperplaneMaxXY;
+        value = hyperplaneMaxXY;
 
-    return targetXY;
+    return value;
 }
 
 void KD_Tree::bst_print_dot_null(const string& key, int nullCount, FILE* stream)
@@ -219,5 +217,4 @@ void KD_Tree::bst_print_dot(KD_node* tree, FILE* stream)
 
     fprintf(stream, "}\n");
 }
-
-}; // namespace PP2
+} // namespace PP2

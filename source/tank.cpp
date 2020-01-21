@@ -11,7 +11,7 @@ namespace PP2
 Tank::Tank(
     float pos_x,
     float pos_y,
-    allignments allignment,
+    alliances allignment,
     SDL_Texture* tank_sprite,
     SDL_Texture* smoke_sprite,
     float tar_x,
@@ -21,7 +21,7 @@ Tank::Tank(
     float max_speed)
     : position(pos_x, pos_y),
       gridCell(Grid::GetGridCell(position)),
-      allignment(allignment),
+      alliance(allignment),
       target(tar_x, tar_y),
       health(health),
       collision_radius(collision_radius),

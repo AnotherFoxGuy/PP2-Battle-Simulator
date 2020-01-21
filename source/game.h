@@ -87,8 +87,6 @@ class Game
 
     void UpdateExplosions();
 
-    void SortHealthBars();
-
     ~Game();
 };
 }; // namespace PP2

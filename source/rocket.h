@@ -8,7 +8,7 @@ namespace PP2
 class Rocket
 {
   public:
-    Rocket(vec2<> position, vec2<> direction, float collision_radius, allignments allignment, SDL_Texture* rocket_sprite);
+    Rocket(vec2<> position, vec2<> direction, float collision_radius, alliances allignment, SDL_Texture* rocket_sprite);
 
     ~Rocket();
 
@@ -27,7 +27,7 @@ class Rocket
 
     bool active;
 
-    allignments allignment;
+    alliances allignment;
 
     int current_frame;
     SDL_Texture* rocket_sprite;

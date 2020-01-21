@@ -8,7 +8,7 @@ namespace PP2
 class Tank
 {
   public:
-    Tank(float pos_x, float pos_y, allignments allignment, SDL_Texture* tank_sprite, SDL_Texture* smoke_sprite, float tar_x,
+    Tank(float pos_x, float pos_y, alliances allignment, SDL_Texture* tank_sprite, SDL_Texture* smoke_sprite, float tar_x,
          float tar_y, float collision_radius, int health, float max_speed);
 
     ~Tank();
@@ -49,7 +49,7 @@ class Tank
     bool reloaded;
     bool active;
 
-    allignments allignment;
+    alliances alliance;
 
     int current_frame;
     SDL_Texture* tank_sprite;
