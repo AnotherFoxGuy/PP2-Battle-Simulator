@@ -16,9 +16,7 @@
 #include "game.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <SDL_syswm.h>
 #include <iostream>
-#include <Windows.h>
 
 #ifdef USING_EASY_PROFILER
 

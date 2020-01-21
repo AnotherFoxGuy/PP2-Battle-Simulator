@@ -68,7 +68,6 @@ vector<SDL_Point> drawPoints = {};
 
 mutex tankVectorMutex;
 
-
 // -----------------------------------------------------------
 // Initialize the application
 // -----------------------------------------------------------
@@ -86,7 +85,6 @@ void Game::Init()
     smoke = LOAD_TEX(smoke_img);
     explosion = LOAD_TEX(explosion_img);
     particle_beam_sprite = LOAD_TEX(particle_beam_img);
-
 
     GameFont = FC_CreateFont();
     FC_LoadFont(GameFont, screen, "assets/digital-7.ttf", 72, FC_MakeColor(255, 255, 255, 255), TTF_STYLE_NORMAL);
@@ -314,6 +312,12 @@ void Game::UpdateRockets()
                           {
                               Rocket& uRocket = rockets[i];
                               uRocket.Tick();
+
+                              if (uRocket.position.x < -250 || uRocket.position.y < -250 || uRocket.position.x > 1750 || uRocket.position.y > 1750)
+                              {
+                                  uRocket.active = false;
+                                  continue;
+                              }
 
                               //Check if rocket collides with enemy tank, spawn explosion and if tank is destroyed spawn a smoke plume
                               for (auto cell : Grid::Instance()->GetNeighbouringCells())
