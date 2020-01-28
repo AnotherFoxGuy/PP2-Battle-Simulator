@@ -60,8 +60,8 @@ const static vec2<> rocket_size(25, 24);
 const static float tank_radius = 12.f;
 const static float rocket_radius = 10.f;
 
-vector<LinkedList<int>> redHealthBars = {};
-vector<LinkedList<int>> blueHealthBars = {};
+vector<int> redHealthBars = {};
+vector<int> blueHealthBars = {};
 vector<SDL_Point> drawPoints = {};
 
 #define LOAD_TEX(_FIELD_) SDL_CreateTextureFromSurface(screen, _FIELD_);
@@ -200,12 +200,16 @@ void Game::Update(float deltaTime)
 #ifdef USING_EASY_PROFILER
         EASY_BLOCK("UpdateRedHP", profiler::colors::Red);
 #endif
-        redHealthBars = LinkedList<int>::Sort(redTanks, 100); });
+        //redHealthBars = LinkedList<int>::Sort(redTanks, 100);
+        redHealthBars = CountSort(redTanks);
+    });
     update_Group.run([&] {
 #ifdef USING_EASY_PROFILER
         EASY_BLOCK("UpdateBlueHP", profiler::colors::Blue);
 #endif
-        blueHealthBars = LinkedList<int>::Sort(blueTanks, 100); });
+        //blueHealthBars = LinkedList<int>::Sort(blueTanks, 100);
+        blueHealthBars = CountSort(blueTanks);
+    });
     update_Group.wait();
 }
 
@@ -237,7 +241,7 @@ void Game::UpdateTanks()
                               if (!tank.active) continue;
 
                               //Check tank collision and nudge tanks away from each other
-                              for (auto cell : Grid::Instance()->GetNeighbouringCells())
+                              for (const auto& cell : Grid::GetNeighbouringCells())
                               {
                                   int x = tank.gridCell.x + cell.x;
                                   int y = tank.gridCell.y + cell.y;
@@ -445,15 +449,10 @@ void Game::Draw()
     //Draw sorted health bars red tanks
 
     int countRed = 0;
-    for (auto& bucket : redHealthBars)
+    for (int currentRedTank : redHealthBars)
     {
-        Node<int>* currentRedTank = bucket.head;
-        while (currentRedTank != nullptr)
-        {
-            DrawTankHP(countRed, RED, currentRedTank->value);
-            currentRedTank = currentRedTank->next;
-            countRed++;
-        }
+        DrawTankHP(countRed, RED, currentRedTank);
+        countRed++;
     }
 
     if (!drawPoints.empty()) SDL_RenderDrawLines(screen, &drawPoints[0], drawPoints.size());
@@ -465,15 +464,10 @@ void Game::Draw()
 #endif
     //Draw sorted health bars blue tanks
     int countBlue = 0;
-    for (auto& bucket : blueHealthBars)
+    for (int currentBlueTank : blueHealthBars)
     {
-        Node<int>* currentBlueTank = bucket.head;
-        while (currentBlueTank != nullptr)
-        {
-            DrawTankHP(countBlue, BLUE, currentBlueTank->value);
-            currentBlueTank = currentBlueTank->next;
-            countBlue++;
-        }
+        DrawTankHP(countBlue, BLUE, currentBlueTank);
+        countBlue++;
     }
     if (!drawPoints.empty()) SDL_RenderDrawLines(screen, &drawPoints[0], drawPoints.size());
     drawPoints.clear();

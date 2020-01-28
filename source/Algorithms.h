@@ -96,4 +96,6 @@ class KD_Tree
     static void bst_print_dot_aux(KD_node* node, FILE* stream);
     static void bst_print_dot_null(const std::string& key, int nullCount, FILE* stream);
 };
+
+std::vector<int> CountSort(const std::vector<Tank*>& in);
 } // namespace PP2

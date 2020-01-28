@@ -217,4 +217,21 @@ void KD_Tree::bst_print_dot(KD_node* tree, FILE* stream)
 
     fprintf(stream, "}\n");
 }
+
+vector<int> CountSort(const vector<Tank*>& in)
+{
+    vector<int> Counters(TANK_MAX_HEALTH + 1, 0);
+    vector<int> Results;
+
+    for (auto x : in)
+        Counters.at(x->health <= 0 ? 0 : x->health)++;
+
+    for (int i = 0; i < TANK_MAX_HEALTH + 1; ++i)
+        if (Counters[i] != 0)
+            for (int y = 0; y < Counters[i]; ++y)
+                Results.push_back(i);
+
+    return Results;
+}
+
 } // namespace PP2
