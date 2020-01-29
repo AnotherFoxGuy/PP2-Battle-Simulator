@@ -15,13 +15,13 @@ using namespace PP2;
 
 #include "Algorithms.h"
 #include "Grid.h"
+#include "defines.h"
 #include "explosion.h"
+#include "game.h"
 #include "particle_beam.h"
 #include "rocket.h"
 #include "smoke.h"
 #include "tank.h"
-
-#include "game.h"
 
 #ifdef USING_EASY_PROFILER
 
@@ -67,6 +67,18 @@ vector<SDL_Point> drawPoints = {};
 #define LOAD_TEX(_FIELD_) SDL_CreateTextureFromSurface(screen, _FIELD_);
 
 mutex tankVectorMutex;
+typedef unsigned int Pixel; // unsigned int is assumed to be 32-bit, which seems a safe assumption.
+
+// subtractive blending
+Pixel SubBlend(Pixel a_Color1, Pixel a_Color2) {
+    int red = (a_Color1 & REDMASK) - (a_Color2 & REDMASK);
+    int green = (a_Color1 & GREENMASK) - (a_Color2 & GREENMASK);
+    int blue = (a_Color1 & BLUEMASK) - (a_Color2 & BLUEMASK);
+    if (red < 0) red = 0;
+    if (green < 0) green = 0;
+    if (blue < 0) blue = 0;
+    return (Pixel) (red + green + blue);
+}
 
 // -----------------------------------------------------------
 // Initialize the application
@@ -408,9 +420,10 @@ void Game::Draw()
             if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
             {
                 // Before setting the color, we need to know where we have to place it.
-                Uint32 pixelPosition = (int)tPos.y * (pitch / sizeof(unsigned int)) + (int)tPos.x;
+                Pixel pixelPosition = (int)tPos.y * (pitch / sizeof(Pixel)) + (int)tPos.x;
                 // Now we can set the pixel(s) we want.
-                pixels[pixelPosition] *= 0x808080; //Black;
+                //pixels[pixelPosition] *= 0x808080; //Black;
+                pixels[pixelPosition] = SubBlend(pixels[pixelPosition], 0x80808080);
             }
         }
     }
