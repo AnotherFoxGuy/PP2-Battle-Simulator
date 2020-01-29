@@ -23,14 +23,12 @@ Grid* Grid::Instance()
     return instance;
 }
 
+// 0.05f => 100 / 2000 (assuming tanks wont go outside [x](-200, 1800), [y](-200, 1800))
+// clamp makes sure tanks are always inside the grid, if the go outside it the will be set back to the min/max grid cell values
+#define CLAP_POS(_IN_) std::clamp((0.05f * _IN_) * (GRID_SIZE / 100.f), -(float)GRID_OFFSET, (float)GRID_SIZE - GRID_OFFSET) + GRID_OFFSET
 vec2<int> Grid::GetGridCell(const vec2<>& position)
 {
-    // 0.05f => 100 / 2000 (assuming tanks wont go outside [x](-200, 1800), [y](-200, 1800))
-    // clamp makes sure tanks are always inside the grid, if the go outside it the will be set back to the min/max grid cell values
-    int x = std::clamp((0.05f * position.x) * (GRID_SIZE / 100.f), -(float)GRID_OFFSET, (float)GRID_SIZE - GRID_OFFSET);
-    int y = std::clamp((0.05f * position.y) * (GRID_SIZE / 100.f), -(float)GRID_OFFSET, (float)GRID_SIZE - GRID_OFFSET);
-
-    return vec2<int>(x + GRID_OFFSET, y + GRID_OFFSET);
+    return vec2<int>(CLAP_POS(position.x), CLAP_POS(position.y));
 }
 
 vector<vec2<int>> Grid::GetNeighbouringCells()
