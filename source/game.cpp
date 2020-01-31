@@ -113,7 +113,6 @@ void Game::Init()
     blueTanks.reserve(NUM_TANKS_BLUE);
     redTanks.reserve(NUM_TANKS_RED);
 
-    uint rows = (uint)sqrt(NUM_TANKS_BLUE + NUM_TANKS_RED);
     uint max_rows = 12;
 
     float start_blue_x = tank_size.x + 10.0f;
@@ -248,7 +247,6 @@ void Game::UpdateTanks()
                           EASY_BLOCK("Update Tank", profiler::colors::Gold);
 #endif
                           for (int i = r.begin(); i < r.end(); ++i)
-                          //for (int i = 0; i < tanks.size(); ++i)
                           {
                               Tank& tank = tanks[i];
                               if (!tank.active) continue;
@@ -412,18 +410,17 @@ void Game::Draw()
     try
     {
         //Draw sprites
-        for (int i = 0; i < MAX_TANKS; i++)
+        for (Tank& t : tanks)
         {
-            tanks.at(i).Draw(screen);
+            t.Draw(screen);
 
-            vec2 tPos = tanks.at(i).Get_Position();
+            vec2 tPos = t.position;
             // tread marks
             if ((tPos.x >= 0) && (tPos.x < SCRWIDTH) && (tPos.y >= 0) && (tPos.y < SCRHEIGHT))
             {
                 // Before setting the color, we need to know where we have to place it.
                 Pixel pixelPosition = (int)tPos.y * (pitch / sizeof(Pixel)) + (int)tPos.x;
                 // Now we can set the pixel(s) we want.
-                //pixels[pixelPosition] *= 0x808080; //Black;
                 pixels[pixelPosition] = SubBlend(pixels[pixelPosition], 0x80808080);
             }
         }
@@ -439,16 +436,10 @@ void Game::Draw()
     EASY_END_BLOCK
 #endif
 
-    for (Rocket& r : rockets)
-    {
-        r.Draw(screen);
-    }
-
-    for (Smoke& s : smokes) { s.Draw(screen); }
-
-    for (Particle_beam& b : particle_beams) { b.Draw(screen); }
-
-    for (Explosion& e : explosions) { e.Draw(screen); }
+    for (Rocket& r : rockets) r.Draw(screen);
+    for (Smoke& s : smokes) s.Draw(screen);
+    for (Particle_beam& b : particle_beams) b.Draw(screen);
+    for (Explosion& e : explosions) e.Draw(screen);
 
     SDL_Rect red = {0, 0, SCRWIDTH, HEALTH_BAR_HEIGHT};
     SDL_Rect blue = {0, (SCRHEIGHT - HEALTH_BAR_HEIGHT) - 1, SCRWIDTH, SCRWIDTH - 1};
@@ -463,12 +454,7 @@ void Game::Draw()
 #endif
     //Draw sorted health bars red tanks
 
-    int countRed = 0;
-    for (int currentRedTank : redHealthBars)
-    {
-        DrawTankHP(countRed, RED, currentRedTank);
-        countRed++;
-    }
+    for (int i = 0; i < redHealthBars.size(); ++i) DrawTankHP(i, RED, redHealthBars[i]);
 
     if (!drawPoints.empty()) SDL_RenderDrawLines(screen, &drawPoints[0], drawPoints.size());
     drawPoints.clear();
@@ -478,12 +464,8 @@ void Game::Draw()
     EASY_BLOCK("Draw Health_Bar_Blue", profiler::colors::Blue);
 #endif
     //Draw sorted health bars blue tanks
-    int countBlue = 0;
-    for (int currentBlueTank : blueHealthBars)
-    {
-        DrawTankHP(countBlue, BLUE, currentBlueTank);
-        countBlue++;
-    }
+    for (int i = 0; i < blueHealthBars.size(); ++i) DrawTankHP(i, BLUE, blueHealthBars[i]);
+
     if (!drawPoints.empty()) SDL_RenderDrawLines(screen, &drawPoints[0], drawPoints.size());
     drawPoints.clear();
 #ifdef USING_EASY_PROFILER
@@ -513,7 +495,6 @@ void Game::DrawTankHP(int i, alliances al, int health)
 // -----------------------------------------------------------
 void PP2::Game::MeasurePerformance()
 {
-    char buffer[128];
     if (frame_count >= MAX_FRAMES)
     {
         if (!lock_update)

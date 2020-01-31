@@ -47,13 +47,13 @@ class LinkedList
     {
         delete head;
     }
-/**
+    /**
  * Insert a value into the list
  * @param value Value to insert
  */
     void InsertValue(T value);
 
-/**
+    /**
  * Sort the list
  * @param input List to sort
  * @param n_buckets Number of buckets to use for sorting
@@ -61,7 +61,7 @@ class LinkedList
  */
     static std::vector<LinkedList<T>> Sort(std::vector<Tank*>& input, int n_buckets);
 
-/**
+    /**
  * The head
  */
     Node<T>* head;
