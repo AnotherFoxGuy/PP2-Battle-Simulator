@@ -433,6 +433,7 @@ void Game::Draw()
     }
 
     // Also don't forget to unlock your texture once you're done.
+    SDL_UnlockTexture(tankThreads);
 
 #ifdef USING_EASY_PROFILER
     EASY_END_BLOCK
@@ -541,22 +542,9 @@ void PP2::Game::MeasurePerformance()
 // -----------------------------------------------------------
 void Game::Tick(float deltaTime)
 {
-    tbb::task_group g;
     if (!lock_update)
-    {
-        g.run([&] {
-#ifdef USING_EASY_PROFILER
-            EASY_BLOCK("SDL_UnlockTexture", profiler::colors::Orange);
-#endif
-            SDL_UnlockTexture(tankThreads);
-        });
         Update(deltaTime);
-    }
-    else
-    {
-        SDL_UnlockTexture(tankThreads);
-    }
-    g.wait();
+
     Draw();
 
     MeasurePerformance();

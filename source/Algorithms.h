@@ -12,6 +12,10 @@
 
 namespace PP2
 {
+/**
+ * Node Used by the Bucketsort/LinkedList
+ * @tparam T
+ */
 template <class T>
 class Node
 {
@@ -29,6 +33,10 @@ class Node
     Node<T>* next;
 };
 
+/**
+ * Bucketsort/LinkedList
+ * @tparam T
+ */
 template <class T>
 class LinkedList
 {
@@ -39,14 +47,29 @@ class LinkedList
     {
         delete head;
     }
-
+/**
+ * Insert a value into the list
+ * @param value Value to insert
+ */
     void InsertValue(T value);
 
+/**
+ * Sort the list
+ * @param input List to sort
+ * @param n_buckets Number of buckets to use for sorting
+ * @return Sorted list
+ */
     static std::vector<LinkedList<T>> Sort(std::vector<Tank*>& input, int n_buckets);
 
+/**
+ * The head
+ */
     Node<T>* head;
 };
 
+/**
+ * The node used by the KD Tree
+ */
 class KD_node
 {
   public:
@@ -68,7 +91,9 @@ class KD_node
     KD_node* right = nullptr;
     KD_node* left = nullptr;
 };
-
+/**
+ * The K-D Tree
+ */
 class KD_Tree
 {
   public:
@@ -77,6 +102,12 @@ class KD_Tree
     {
         delete root;
     };
+
+    /**
+     * Find the closest tank
+     * @param tank The tank to measure the distance
+     * @return
+     */
     Tank* findClosestTank(Tank* tank);
 
     void printTree()
